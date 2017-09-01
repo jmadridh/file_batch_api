@@ -31,16 +31,16 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
                 <logger message="No entity specified" level="INFO" doc:name="Logger"/>
             </otherwise>
         </choice>
+        <set-payload value="#[payload]" doc:name="Reporting Log"/>
         <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <flow name="account_scheduler">
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 0 1 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-        	<sftp:inbound-endpoint responseTimeout="10000"
+        	<sftp:inbound-endpoint exchange-pattern="one-way" responseTimeout="10000"
 				doc:name="SFTP" ref="SFTP_Inbound_Properties">
-				<file:filename-wildcard-filter
-					pattern="*.txt,*.csv" caseSensitive="false" />
+                <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
 			</sftp:inbound-endpoint>
             <dw:transform-message doc:name="ListIterator">
                 <dw:set-payload><![CDATA[%dw 1.0
@@ -64,10 +64,9 @@ payload]]></dw:set-payload>
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 30 1 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastVehicleCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <sftp:inbound-endpoint responseTimeout="10000"
+            <sftp:inbound-endpoint exchange-pattern="one-way" responseTimeout="10000"
 				doc:name="SFTP" ref="SFTP_Inbound_Properties">
-				<file:filename-wildcard-filter
-					pattern="*.txt,*.csv" caseSensitive="false" />
+                <file:filename-wildcard-filter pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false"/>
 			</sftp:inbound-endpoint>
             <dw:transform-message doc:name="ListIterator">
                 <dw:set-payload><![CDATA[%dw 1.0
@@ -91,10 +90,9 @@ payload]]></dw:set-payload>
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 0 2 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastVehicleAssociationCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-        <sftp:inbound-endpoint responseTimeout="10000"
+        <sftp:inbound-endpoint exchange-pattern="one-way" responseTimeout="10000"
 				doc:name="SFTP" ref="SFTP_Inbound_Properties">
-				<file:filename-wildcard-filter
-					pattern="*.txt,*.csv" caseSensitive="false" />
+                <file:filename-wildcard-filter pattern="*vehicleassociation*.txt,*vehicleassociation*.csv" caseSensitive="false"/>
 			</sftp:inbound-endpoint>
             <dw:transform-message doc:name="ListIterator">
                 <dw:set-payload><![CDATA[%dw 1.0

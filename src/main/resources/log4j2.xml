@@ -10,13 +10,37 @@
 
 
     <Appenders>
-        <RollingFile name="file" fileName="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}batchprocessapi.log" 
-                 filePattern="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}batchprocessapi-%i.log">
+        <RollingFile name="file" fileName="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}file_batch_api.log" 
+                 filePattern="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}file_batch_api-%i.log">
             <PatternLayout pattern="%d [%t] %-5p %c - %m%n" />
             <SizeBasedTriggeringPolicy size="10 MB" />
             <DefaultRolloverStrategy max="10"/>
         </RollingFile>
+        
+        <!-- *** :Logging and Exception Handling Framework Related - Rolling Files: START *** -->
+        <RollingFile name="commonLog" fileName="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}ELK${sys:file.separator}leh-common-trans-logs.log" 
+                 filePattern="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}set1${sys:file.separator}ELK${sys:file.separator}leh-common-trans-logs-%i.log">
+            <!-- <PatternLayout pattern="%m%n" /> -->
+            <JsonLayout compact="true" eventEol="true"/>
+            <SizeBasedTriggeringPolicy size="10 MB" />
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+        <RollingFile name="commonErrorLog" fileName="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}ELK${sys:file.separator}leh-common-trans-error-logs.log" 
+                 filePattern="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}ELK${sys:file.separator}leh-common-trans-error-logs-%i.log">
+            <!-- <PatternLayout pattern="%m%n" /> -->
+            <JsonLayout compact="true" eventEol="true"/>
+            <SizeBasedTriggeringPolicy size="10 MB" />
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+        <RollingFile name="commonAuditLog" fileName="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}AUDIT${sys:file.separator}leh-common-audit-logs.log" 
+                 filePattern="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}AUDIT${sys:file.separator}leh-common-audit-logs%i.log">
+            <PatternLayout pattern="%d [%t] %-5p %c - %m%n" />
+            <SizeBasedTriggeringPolicy size="10 MB" />
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>        
+        <!-- *** :Logging and Exception Handling Framework Related - Rolling Files: End *** -->
     </Appenders>
+
     <Loggers>
     	
     	
@@ -42,6 +66,19 @@
         <!-- Reduce DM verbosity -->
         <AsyncLogger name="org.jetel" level="WARN"/>
         <AsyncLogger name="Tracking" level="WARN"/>
+        
+        
+        <!-- *** :Logging and Exception Handling Framework Related - Appenders: START *** -->
+        <AsyncLogger name="com.ic.leh.trans.log" level="INFO">
+        	<AppenderRef ref="commonLog" />
+        </AsyncLogger>
+        <AsyncLogger name="com.ic.leh.trans.error.log" level="ERROR">
+        	<AppenderRef ref="commonErrorLog" />
+        </AsyncLogger>
+        <AsyncLogger name="com.ic.leh.audit" level="INFO">
+        	<AppenderRef ref="commonAuditLog" />
+        </AsyncLogger>        
+        <!-- *** :Logging and Exception Handling Framework Related - Appenders: END *** -->
         
         <AsyncRoot level="INFO">
             <AppenderRef ref="file" />

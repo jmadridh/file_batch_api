@@ -23,20 +23,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 
 
 	<batch:job name="vehicleassociation">
-		<batch:input>
-			<sftp:inbound-endpoint responseTimeout="10000"
-				doc:name="SFTP" ref="SFTP_Inbound_Properties">
-				<file:filename-wildcard-filter
-					pattern="*.txt,*.csv" caseSensitive="false" />
-			</sftp:inbound-endpoint>
-            <dw:transform-message doc:name="ListIterator">
-                <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload]]></dw:set-payload>
-            </dw:transform-message>
 
-		</batch:input>
 		<batch:process-records>
 			<batch:step name="EachRecordFile">
                     <validation:all doc:name="Data Validation">

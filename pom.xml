@@ -18,6 +18,10 @@
 		<mule.tools.version>1.2</mule.tools.version>
 		<munit.version>1.3.2</munit.version>
 		<mule.munit.support.version>3.8.3</mule.munit.support.version>
+		<mule.amq.version>1.0.1</mule.amq.version>
+		<mule.security.placeholder.version>1.6.5</mule.security.placeholder.version>
+		<!-- Logging and Exception Framework Version -->
+		<leh.version>1.0.0-SNAPSHOT</leh.version>
 	</properties>
 
 	<build>
@@ -167,7 +171,7 @@
 		<dependency>
 			<groupId>com.mulesoft.security</groupId>
 			<artifactId>mule-module-security-property-placeholder</artifactId>
-			<version>1.6.5</version>
+			<version>${mule.security.placeholder.version}</version>
 		</dependency>
 
 		<dependency>
@@ -197,7 +201,7 @@
 		<dependency>
 			<groupId>com.mulesoft.muleesb.modules</groupId>
 			<artifactId>mule-module-anypoint-mq-ee</artifactId>
-			<version>1.0.1</version>
+			<version>${mule.amq.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
@@ -229,6 +233,13 @@
 			<version>${mule.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<!-- Logging and Exception Framework -->
+        <dependency>
+            <groupId>com.ic.leh.common</groupId>
+            <artifactId>leh-common-utilities</artifactId>
+            <version>${leh.version}</version>
+        </dependency>         
 	</dependencies>
 
 	<repositories>

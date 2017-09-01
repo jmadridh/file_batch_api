@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * This class objective is to create a critical area around the application in
- * order to stop that two what ever threads access the area if other is in it.
+ * order to stop what ever threads access the area if other is in it.
  * 
  * A semaphore initialized to one, and which is used such that it only has at
  * most one permit available, can serve as a mutual exclusion lock. This is more
