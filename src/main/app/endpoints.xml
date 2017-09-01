@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
 	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
 	xmlns:file="http://www.mulesoft.org/schema/mule/file"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
@@ -43,7 +43,7 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
             <schedulers:cron-scheduler expression="0 0 1 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
             <processor-chain doc:name="Processor Chain">
-                <sftp:inbound-endpoint port="22" responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Account Files">
+                <sftp:inbound-endpoint responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Account Files" metadata:id="3fe1160a-785f-4434-be2a-bd5dd854710a">
                     <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
                 </sftp:inbound-endpoint>
             </processor-chain>
