@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:secure-property-placeholder="http://www.mulesoft.org/schema/mule/secure-property-placeholder"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mulesoft.org/schema/mule/secure-property-placeholder/current/mule-secure-property-placeholder.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+
+
+	<http:listener-config name="HTTP_Batch_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    
+    
+	<sftp:endpoint host="${sftp.host}" port="${sftp.port}"
+		path="${sftp.path}" user="${sftp.username}" password="${sftp.password}"
+		name="SFTP_Inbound_Properties" responseTimeout="10000" doc:name="SFTP"
+		pollingFrequency="${sftp.pollingFrequency}" exchange-pattern="one-way"
+		doc:description="SFTP Inbound Configuration Properties.
+Include: 
+- Polling Frequency 
+- Reconnect Strategy">
+		<reconnect frequency="${sftp.reconnectFrequency}" count="${sftp.reconnection}"
+			blocking="false" />
+	</sftp:endpoint>
+
+	<configuration doc:name="Configuration Dataweave Functions" doc:description="Global Dataweave Functions">
+		<expression-language>
+			<global-functions>
+				def globalOperation(){
+				return "globalOperation"
+				}
+			</global-functions>
+		</expression-language>
+		
+	</configuration>
+	
+	<configuration doc:name="Receiver Threading Profile" doc:description="Threading Profile for Receiver Threads">
+		<default-receiver-threading-profile maxThreadsActive="10" threadTTL="20000" doThreading="true" poolExhaustedAction="WAIT"/>
+	</configuration>
+	
+	<configuration doc:name="Dispatcher Threading Profile" doc:description="Threading Profile for Dispatcher Threads">
+		<default-dispatcher-threading-profile maxThreadsActive="10" threadTTL="10000" doThreading="true" poolExhaustedAction="WAIT"/>
+	</configuration>
+
+	<!-- Anypoint MQ Configuration Parameters -->
+	<!-- <anypoint-mq:config name="Anypoint_MQ_Configuration" doc:name="Anypoint 
+		MQ Configuration"> <anypoint-mq:provider url="${amq.url}" clientId="${amq.clientid}" 
+		clientSecret="${amq.clientsecret}" /> </anypoint-mq:config> -->
+		
+	<secure-property-placeholder:config
+		name="Secure_Property_Placeholder" key="${secure.key}" location="${env}.properties"
+		doc:name="Secure Property Placeholder" 
+		doc:description="Secure Property Placeholder"/>
+		
+		
+    <spring:beans>
+        <spring:bean id="PollSynchronizer" name="PollSynchronizer" class="com.inchcape.util.PollSynchronizer" scope="singleton"/>
+    </spring:beans>
+
+
+</mule>
