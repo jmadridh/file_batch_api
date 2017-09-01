@@ -16,7 +16,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mule/schedulers/current/mule-schedulers.xsd">
     <flow name="endpointsFlow">
-        <http:listener config-ref="HTTP_Batch_Listener_Configuration" path="/start" allowedMethods="GET" doc:name="GET reporting batch"/>
+        <http:listener config-ref="file_batch_api_httpListenerConfiguration" path="/start" allowedMethods="GET" doc:name="GET reporting batch"/>
         
         <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/>
         <flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
@@ -42,17 +42,18 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 0 1 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-        	<sftp:inbound-endpoint  responseTimeout="10000"
-				doc:name="SFTP" ref="SFTP_Inbound_Properties">
-                <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
-			</sftp:inbound-endpoint>
-            <dw:transform-message doc:name="ListIterator">
-                <dw:set-payload><![CDATA[%dw 1.0
+            <processor-chain doc:name="Processor Chain">
+                <sftp:inbound-endpoint port="22" responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Account Files">
+                    <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
+                </sftp:inbound-endpoint>
+            </processor-chain>
+        </poll>
+        <dw:transform-message doc:name="ListIterator">
+            <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
-            </dw:transform-message>
-        </poll>
+        </dw:transform-message>
         
         <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/>
         <flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
@@ -72,17 +73,18 @@ payload]]></dw:set-payload>
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 30 1 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastVehicleCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <sftp:inbound-endpoint  responseTimeout="10000"
-				doc:name="SFTP" ref="SFTP_Inbound_Properties">
-                <file:filename-wildcard-filter pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false"/>
-			</sftp:inbound-endpoint>
-            <dw:transform-message doc:name="ListIterator">
-                <dw:set-payload><![CDATA[%dw 1.0
+            <processor-chain doc:name="Processor Chain">
+                <sftp:inbound-endpoint port="22" responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Vehicle Files">
+                    <file:filename-wildcard-filter pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false"/>
+                </sftp:inbound-endpoint>
+            </processor-chain>
+        </poll>
+        <dw:transform-message doc:name="ListIterator">
+            <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
-            </dw:transform-message>
-        </poll>
+        </dw:transform-message>
         <choice doc:name="lock policy">
             <when expression="#['poll' == '${trigger.policy}']">
                 <expression-component doc:name="lock vehicle batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
@@ -98,17 +100,18 @@ payload]]></dw:set-payload>
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 0 2 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastVehicleAssociationCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-        <sftp:inbound-endpoint  responseTimeout="10000"
-				doc:name="SFTP" ref="SFTP_Inbound_Properties">
-                <file:filename-wildcard-filter pattern="*vehicleassociation*.txt,*vehicleassociation*.csv" caseSensitive="false"/>
-			</sftp:inbound-endpoint>
-            <dw:transform-message doc:name="ListIterator">
-                <dw:set-payload><![CDATA[%dw 1.0
+            <processor-chain doc:name="Processor Chain">
+                <sftp:inbound-endpoint port="22" responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP VehicleAssociation Files">
+                    <file:filename-wildcard-filter pattern="*vehicleassociation*.txt,*vehicleassociation*.csv" caseSensitive="false"/>
+                </sftp:inbound-endpoint>
+            </processor-chain>
+        </poll>
+        <dw:transform-message doc:name="ListIterator">
+            <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
-            </dw:transform-message>
-        </poll>
+        </dw:transform-message>
         <choice doc:name="lock policy">
             <when expression="#['poll' == '${trigger.policy}']">
                 <expression-component doc:name="lock vehicleassociation batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
