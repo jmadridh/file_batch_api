@@ -18,14 +18,14 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
     <flow name="endpointsFlow">
         <http:listener config-ref="HTTP_Batch_Listener_Configuration" path="/start" allowedMethods="GET" doc:name="GET reporting batch"/>
         <choice doc:name="report batch">
-            <when expression="">
-                <expression-component doc:name="Invoke or get reporting from Logs"/>
+            <when expression="#[message.inboundProperties.'http.query.params'.account]">
+                <expression-component doc:name="Invoke or get reporting Account Logs"/>
             </when>
             <when expression="#[message.inboundProperties.'http.query.params'.vehicle]">
-                <expression-component doc:name="Invoke or get reporting from Logs"/>
+                <expression-component doc:name="Invoke or get reporting Vehicle Logs"/>
             </when>
             <when expression="#[message.inboundProperties.'http.query.params'.vehicleassociation]">
-                <expression-component doc:name="Invoke or get reporting from Logs"/>
+                <expression-component doc:name="Invoke or get reporting VehicleAssociation Logs"/>
             </when>
             <otherwise>
                 <logger message="No entity specified" level="INFO" doc:name="Logger"/>
@@ -78,7 +78,7 @@ payload]]></dw:set-payload>
         </poll>
         <choice doc:name="lock policy">
             <when expression="#['poll' == '${trigger.policy}']">
-                <expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
+                <expression-component doc:name="lock vehicle batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
                 <batch:execute name="vehicle" doc:name="vehicle"/>
             </when>
             <otherwise>
@@ -105,7 +105,7 @@ payload]]></dw:set-payload>
         </poll>
         <choice doc:name="lock policy">
             <when expression="#['poll' == '${trigger.policy}']">
-                <expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
+                <expression-component doc:name="lock vehicleassociation batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
                 <batch:execute name="vehicleassociation" doc:name="vehicleassociation"/>
             </when>
             <otherwise>

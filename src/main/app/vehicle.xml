@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:file="http://www.mulesoft.org/schema/mule/file"
 	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
 	xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
 	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
@@ -18,24 +18,12 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 
 
 	<batch:job name="vehicle">
-		<batch:input>
-			<sftp:inbound-endpoint responseTimeout="10000"
-				doc:name="SFTP" ref="SFTP_Inbound_Properties">
-				<file:filename-wildcard-filter
-					pattern="*.txt,*.csv" caseSensitive="false" />
-			</sftp:inbound-endpoint>
-            <dw:transform-message doc:name="ListIterator">
-                <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload]]></dw:set-payload>
-            </dw:transform-message>
 
-		</batch:input>
 		<batch:process-records>
 			<batch:step name="EachRecordFile">
                     <validation:all doc:name="Data Validation">
@@ -52,18 +40,14 @@ payload]]></dw:set-payload>
 
 			</batch:step>
 			<batch:step name="RouteRecordToAMQ" accept-expression="#[payload]">
-                <choice doc:name="Is it account file?">
-                    <when expression="#[payload!=null]">
-                        <flow-ref name="account" doc:name="account"/>
-                    </when>
-                    <otherwise>
-                        <flow-ref name="vehicle" doc:name="vehicle"/>
-                    </otherwise>
-                </choice>
+                <flow-ref name="queue" doc:name="queue"/>
 
 				<!-- <anypoint-mq:publish config-ref="Anypoint_MQ_Configuration" destination="${amq.destination}" 
 					doc:name="RouteToTopic"/> -->
 			</batch:step>
+            <batch:step name="RecordToVehicleSystemAPI">
+                <http:request config-ref="HTTP_Request_Configuration" path="vehicle_sys_api" method="POST" doc:name="HTTP"/>
+            </batch:step>
 			<batch:step name="LogFailureSteps" accept-policy="ONLY_FAILURES"
 				accept-expression="#[]">
 				<logger level="ERROR" doc:name="Failure" message="Failure because #[payload]" />
