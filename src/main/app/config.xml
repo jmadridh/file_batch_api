@@ -27,9 +27,9 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 		
     <spring:beans>
         <spring:bean id="PollSynchronizer" name="PollSynchronizer" class="com.inchcape.util.PollSynchronizer" scope="singleton" />
-    	<spring:import doc:name="logging_exception_handling_request_preprocess" resource="classpath:leh-common-request-preprocess.xml" />
-		<spring:import doc:name="logging_exception_handling_transaction" resource="classpath:leh-common-transaction-log-flow.xml" />
-		<spring:import doc:name="error_handling" resource="classpath:error-handling.xml" />
+    	<spring:import  resource="classpath:leh-common-request-preprocess.xml" />
+		<spring:import  resource="classpath:leh-common-transaction-log-flow.xml" />
+		<spring:import  resource="classpath:error-handling.xml" />
 	</spring:beans>
 	
 	
