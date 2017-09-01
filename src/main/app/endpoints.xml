@@ -17,6 +17,10 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mule/schedulers/current/mule-schedulers.xsd">
     <flow name="endpointsFlow">
         <http:listener config-ref="HTTP_Batch_Listener_Configuration" path="/start" allowedMethods="GET" doc:name="GET reporting batch"/>
+        
+        <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/>
+        <flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
+        
         <choice doc:name="report batch">
             <when expression="#[message.inboundProperties.'http.query.params'.account]">
                 <expression-component doc:name="Invoke or get reporting Account Logs"/>
@@ -32,13 +36,13 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
             </otherwise>
         </choice>
         <set-payload value="#[payload]" doc:name="Reporting Log"/>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
+        <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <flow name="account_scheduler">
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 0 1 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-        	<sftp:inbound-endpoint exchange-pattern="one-way" responseTimeout="10000"
+        	<sftp:inbound-endpoint  responseTimeout="10000"
 				doc:name="SFTP" ref="SFTP_Inbound_Properties">
                 <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
 			</sftp:inbound-endpoint>
@@ -49,6 +53,10 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
 payload]]></dw:set-payload>
             </dw:transform-message>
         </poll>
+        
+        <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/>
+        <flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
+        
         <choice doc:name="lock policy">
             <when expression="#['poll' == '${trigger.policy}']">
                 <expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
@@ -58,13 +66,13 @@ payload]]></dw:set-payload>
                 <logger level="INFO" doc:name="Logger"/>
             </otherwise>
         </choice>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
+        <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <flow name="vehicle_scheduler">
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 30 1 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastVehicleCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <sftp:inbound-endpoint exchange-pattern="one-way" responseTimeout="10000"
+            <sftp:inbound-endpoint  responseTimeout="10000"
 				doc:name="SFTP" ref="SFTP_Inbound_Properties">
                 <file:filename-wildcard-filter pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false"/>
 			</sftp:inbound-endpoint>
@@ -84,13 +92,13 @@ payload]]></dw:set-payload>
                 <logger level="INFO" doc:name="Logger"/>
             </otherwise>
         </choice>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
+        <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <flow name="vehicleassociation_scheduler">
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 0 2 * * ?" timeZone="Europe/London"/>
             <watermark variable="lastVehicleAssociationCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-        <sftp:inbound-endpoint exchange-pattern="one-way" responseTimeout="10000"
+        <sftp:inbound-endpoint  responseTimeout="10000"
 				doc:name="SFTP" ref="SFTP_Inbound_Properties">
                 <file:filename-wildcard-filter pattern="*vehicleassociation*.txt,*vehicleassociation*.csv" caseSensitive="false"/>
 			</sftp:inbound-endpoint>
@@ -110,6 +118,6 @@ payload]]></dw:set-payload>
                 <logger level="INFO" doc:name="Logger"/>
             </otherwise>
         </choice>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
+        <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
     </flow>
 </mule>

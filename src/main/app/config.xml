@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+<mule xmlns:cluster="http://www.mulesoft.org/schema/mule/ee/cluster" xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:file="http://www.mulesoft.org/schema/mule/file"
 	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
@@ -19,22 +19,22 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
 
 
-	<http:listener-config name="HTTP_Batch_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
-    
-    
-	<sftp:endpoint host="${sftp.host}" port="${sftp.port}"
-		path="${sftp.path}" user="${sftp.username}" password="${sftp.password}"
-		name="SFTP_Inbound_Properties" responseTimeout="10000" doc:name="SFTP"
-		 exchange-pattern="one-way"
-		doc:description="SFTP Inbound Configuration Properties.
-Include: 
-- Polling Frequency 
-- Reconnect Strategy">
-		<reconnect frequency="${sftp.reconnectFrequency}" count="${sftp.reconnection}"
-			blocking="false" />
-	</sftp:endpoint>
-
-	<configuration doc:name="Configuration Dataweave Functions" doc:description="Global Dataweave Functions">
+	<secure-property-placeholder:config
+		name="file_batch_api_securePropertyPlaceholder" key="${secure.key}" location="${env}.properties"
+		doc:name="Secure Property Placeholder" 
+		doc:description="Secure Property Placeholder"/>
+		
+		
+    <spring:beans>
+        <spring:bean id="PollSynchronizer" name="PollSynchronizer" class="com.inchcape.util.PollSynchronizer" scope="singleton" />
+    	<spring:import doc:name="logging_exception_handling_request_preprocess" resource="classpath:leh-common-request-preprocess.xml" />
+		<spring:import doc:name="logging_exception_handling_transaction" resource="classpath:leh-common-transaction-log-flow.xml" />
+		<spring:import doc:name="error_handling" resource="classpath:error-handling.xml" />
+	</spring:beans>
+	
+	
+	<configuration doc:name="DataweaveFunctions" doc:description="Global Dataweave Functions Defined: globalOperation()">
+        <http:config useTransportForUris="false"/>
 		<expression-language>
 			<global-functions>
 				def globalOperation(){
@@ -45,28 +45,33 @@ Include:
 		
 	</configuration>
 	
-	<configuration doc:name="Receiver Threading Profile" doc:description="Threading Profile for Receiver Threads">
+	<configuration doc:name="ReceiverThreadingProfile" doc:description="Threading Profile for Receiver Threads">
 		<default-receiver-threading-profile maxThreadsActive="10" threadTTL="20000" doThreading="true" poolExhaustedAction="WAIT"/>
 	</configuration>
 	
-	<configuration doc:name="Dispatcher Threading Profile" doc:description="Threading Profile for Dispatcher Threads">
+	<configuration doc:name="DispatcherThreadingProfile" doc:description="Threading Profile for Dispatcher Threads">
 		<default-dispatcher-threading-profile maxThreadsActive="10" threadTTL="10000" doThreading="true" poolExhaustedAction="WAIT"/>
 	</configuration>
+	
+	<http:listener-config name="file_batch_api_httpListenerConfiguration" host="${http.host}" port="${http.port}" doc:name="HTTP Listener Configuration" doc:description="Global HTTP Configuration"/>
+    
+    
+	<sftp:endpoint host="${sftp.host}" port="${sftp.port}"
+		path="${sftp.path}" user="${sftp.username}" password="${sftp.password}"
+		name="file_batch_api_SFTPInboundProperties" responseTimeout="10000" doc:name="SFTP"
+		 exchange-pattern="one-way"
+		doc:description="SFTP Inbound Configuration Properties.
+Include: 
+- Polling Frequency 
+- Reconnect Strategy">
+		<reconnect frequency="${sftp.reconnectFrequency}" count="${sftp.reconnection}"
+			blocking="false" />
+	</sftp:endpoint>
+
 
 	<!-- Anypoint MQ Configuration Parameters -->
 	<!-- <anypoint-mq:config name="Anypoint_MQ_Configuration" doc:name="Anypoint 
 		MQ Configuration"> <anypoint-mq:provider url="${amq.url}" clientId="${amq.clientid}" 
 		clientSecret="${amq.clientsecret}" /> </anypoint-mq:config> -->
 		
-	<secure-property-placeholder:config
-		name="Secure_Property_Placeholder" key="${secure.key}" location="${env}.properties"
-		doc:name="Secure Property Placeholder" 
-		doc:description="Secure Property Placeholder"/>
-		
-		
-    <spring:beans>
-        <spring:bean id="PollSynchronizer" name="PollSynchronizer" class="com.inchcape.util.PollSynchronizer" scope="singleton"/>
-    </spring:beans>
-
-
 </mule>
