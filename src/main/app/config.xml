@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:cluster="http://www.mulesoft.org/schema/mule/ee/cluster" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+<mule xmlns:cluster="http://www.mulesoft.org/schema/mule/ee/cluster"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:file="http://www.mulesoft.org/schema/mule/file"
 	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
 	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
@@ -20,21 +20,23 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 
 
 	<secure-property-placeholder:config
-		name="file_batch_api_securePropertyPlaceholder" key="${secure.key}" location="${env}.properties"
-		doc:name="Secure Property Placeholder" 
-		doc:description="Secure Property Placeholder"/>
-		
-		
-    <spring:beans>
-        <spring:bean id="PollSynchronizer" name="PollSynchronizer" class="com.inchcape.util.PollSynchronizer" scope="singleton" />
-    	<spring:import  resource="classpath:leh-common-request-preprocess.xml" />
-		<spring:import  resource="classpath:leh-common-transaction-log-flow.xml" />
-		<spring:import  resource="classpath:error-handling.xml" />
+		name="file_batch_api_securePropertyPlaceholder" key="${secure.key}"
+		location="${env}.properties" doc:name="Secure Property Placeholder"
+		doc:description="Secure Property Placeholder" />
+
+
+	<spring:beans>
+		<spring:bean id="PollSynchronizer" name="PollSynchronizer"
+			class="com.inchcape.util.PollSynchronizer" scope="singleton" />
+		<!-- <spring:import resource="classpath:leh-common-request-preprocess.xml" />
+		<spring:import resource="classpath:leh-common-transaction-log-flow.xml" />
+		<spring:import resource="classpath:error-handling.xml" /> -->
 	</spring:beans>
-	
-	
-	<configuration doc:name="DataweaveFunctions" doc:description="Global Dataweave Functions Defined: globalOperation()">
-        <http:config useTransportForUris="false"/>
+
+
+	<configuration doc:name="DataweaveFunctions"
+		doc:description="Global Dataweave Functions Defined: globalOperation()">
+		<http:config useTransportForUris="false" />
 		<expression-language>
 			<global-functions>
 				def globalOperation(){
@@ -42,24 +44,32 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 				}
 			</global-functions>
 		</expression-language>
-		
+
 	</configuration>
-	
-	<configuration doc:name="ReceiverThreadingProfile" doc:description="Threading Profile for Receiver Threads">
-		<default-receiver-threading-profile maxThreadsActive="10" threadTTL="20000" doThreading="true" poolExhaustedAction="WAIT"/>
+
+	<configuration doc:name="ReceiverThreadingProfile"
+		doc:description="Threading Profile for Receiver Threads">
+		<default-receiver-threading-profile
+			maxThreadsActive="10" threadTTL="20000" doThreading="true"
+			poolExhaustedAction="WAIT" />
 	</configuration>
-	
-	<configuration doc:name="DispatcherThreadingProfile" doc:description="Threading Profile for Dispatcher Threads">
-		<default-dispatcher-threading-profile maxThreadsActive="10" threadTTL="10000" doThreading="true" poolExhaustedAction="WAIT"/>
+
+	<configuration doc:name="DispatcherThreadingProfile"
+		doc:description="Threading Profile for Dispatcher Threads">
+		<default-dispatcher-threading-profile
+			maxThreadsActive="10" threadTTL="10000" doThreading="true"
+			poolExhaustedAction="WAIT" />
 	</configuration>
-	
-	<http:listener-config name="file_batch_api_httpListenerConfiguration" host="${http.host}" port="${http.port}" doc:name="HTTP Listener Configuration" doc:description="Global HTTP Configuration"/>
-    
-    
+
+	<http:listener-config name="file_batch_api_httpListenerConfiguration"
+		host="${http.host}" port="${http.port}" doc:name="HTTP Listener Configuration"
+		doc:description="Global HTTP Configuration" />
+
+
 	<sftp:endpoint host="${sftp.host}" port="${sftp.port}"
 		path="${sftp.path}" user="${sftp.username}" password="${sftp.password}"
-		name="file_batch_api_SFTPInboundProperties" responseTimeout="10000" doc:name="SFTP"
-		 exchange-pattern="one-way"
+		name="file_batch_api_SFTPInboundProperties" responseTimeout="10000"
+		doc:name="SFTP" exchange-pattern="one-way"
 		doc:description="SFTP Inbound Configuration Properties.
 Include: 
 - Polling Frequency 
@@ -73,5 +83,5 @@ Include:
 	<!-- <anypoint-mq:config name="Anypoint_MQ_Configuration" doc:name="Anypoint 
 		MQ Configuration"> <anypoint-mq:provider url="${amq.url}" clientId="${amq.clientid}" 
 		clientSecret="${amq.clientsecret}" /> </anypoint-mq:config> -->
-		
+
 </mule>

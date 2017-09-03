@@ -17,10 +17,10 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mule/schedulers/current/mule-schedulers.xsd">
     <flow name="endpointsFlow">
         <http:listener config-ref="file_batch_api_httpListenerConfiguration" path="/start" allowedMethods="GET" doc:name="GET reporting batch"/>
-        
+        <!-- 
         <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/>
         <flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
-        
+         -->
         <choice doc:name="report batch">
             <when expression="#[message.inboundProperties.'http.query.params'.account]">
                 <expression-component doc:name="Invoke or get reporting Account Logs"/>
@@ -36,7 +36,7 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
             </otherwise>
         </choice>
         <set-payload value="#[payload]" doc:name="Reporting Log"/>
-        <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <flow name="account_scheduler">
         <poll doc:name="Poll">
@@ -54,10 +54,10 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
 ---
 payload]]></dw:set-payload>
         </dw:transform-message>
-        
+        <!-- 
         <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/>
         <flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
-        
+         -->
         <choice doc:name="lock policy">
             <when expression="#['poll' == '${trigger.policy}']">
                 <expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
@@ -67,7 +67,7 @@ payload]]></dw:set-payload>
                 <logger level="INFO" doc:name="Logger"/>
             </otherwise>
         </choice>
-        <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <flow name="vehicle_scheduler">
         <poll doc:name="Poll">
@@ -94,7 +94,7 @@ payload]]></dw:set-payload>
                 <logger level="INFO" doc:name="Logger"/>
             </otherwise>
         </choice>
-        <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <flow name="vehicleassociation_scheduler">
         <poll doc:name="Poll">
@@ -121,6 +121,6 @@ payload]]></dw:set-payload>
                 <logger level="INFO" doc:name="Logger"/>
             </otherwise>
         </choice>
-        <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
 </mule>
