@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
-	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
-	xmlns:file="http://www.mulesoft.org/schema/mule/file"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata"
+	xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
@@ -15,112 +15,139 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mule/schedulers/current/mule-schedulers.xsd">
-    <flow name="endpointsFlow">
-        <http:listener config-ref="file_batch_api_httpListenerConfiguration" path="/start" allowedMethods="GET" doc:name="GET reporting batch"/>
-        <!-- 
-        <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/>
-        <flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
-         -->
-        <choice doc:name="report batch">
-            <when expression="#[message.inboundProperties.'http.query.params'.account]">
-                <expression-component doc:name="Invoke or get reporting Account Logs"/>
-            </when>
-            <when expression="#[message.inboundProperties.'http.query.params'.vehicle]">
-                <expression-component doc:name="Invoke or get reporting Vehicle Logs"/>
-            </when>
-            <when expression="#[message.inboundProperties.'http.query.params'.vehicleassociation]">
-                <expression-component doc:name="Invoke or get reporting VehicleAssociation Logs"/>
-            </when>
-            <otherwise>
-                <logger message="No entity specified" level="INFO" doc:name="Logger"/>
-            </otherwise>
-        </choice>
-        <set-payload value="#[payload]" doc:name="Reporting Log"/>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
-    </flow>
-    <flow name="account_scheduler">
-        <poll doc:name="Poll">
-            <schedulers:cron-scheduler expression="0 0 1 * * ?" timeZone="Europe/London"/>
-            <watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <processor-chain doc:name="Processor Chain">
-                <sftp:inbound-endpoint responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Account Files" metadata:id="3fe1160a-785f-4434-be2a-bd5dd854710a">
-                    <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
-                </sftp:inbound-endpoint>
-            </processor-chain>
-        </poll>
-        <dw:transform-message doc:name="ListIterator">
-            <dw:set-payload><![CDATA[%dw 1.0
+
+
+	<spring:beans>
+		<spring:import resource="classpath:batch_framework_configuration.xml"
+			doc:name="Batch Framework Configuration" doc:description="Configuration Parameters" />
+	</spring:beans>
+	
+	<flow name="endpointsFlow">
+		<http:listener config-ref="file_batch_api_httpListenerConfiguration"
+			path="/start" allowedMethods="GET" doc:name="GET reporting batch" />
+		<!-- <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
+			<flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/> -->
+		<choice doc:name="report batch">
+			<when expression="#[message.inboundProperties.'http.query.params'.account]">
+				<expression-component doc:name="Invoke or get reporting Account Logs" />
+			</when>
+			<when expression="#[message.inboundProperties.'http.query.params'.vehicle]">
+				<expression-component doc:name="Invoke or get reporting Vehicle Logs" />
+			</when>
+			<when
+				expression="#[message.inboundProperties.'http.query.params'.vehicleassociation]">
+				<expression-component
+					doc:name="Invoke or get reporting VehicleAssociation Logs" />
+			</when>
+			<otherwise>
+				<logger message="No entity specified" level="INFO" doc:name="Logger" />
+			</otherwise>
+		</choice>
+		<set-payload value="#[payload]" doc:name="Reporting Log" />
+		<exception-strategy ref="defaultChoiceExceptionStrategy"
+			doc:name="Reference Exception Strategy" />
+	</flow>
+	<flow name="account_scheduler">
+		<poll doc:name="Poll">
+			<schedulers:cron-scheduler expression="0 0 1 * * ?"
+				timeZone="Europe/London" />
+			<watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}"
+				selector="MAX" selector-expression="#[payload.LastModifiedDate]" />
+			<processor-chain doc:name="Processor Chain">
+				<sftp:inbound-endpoint responseTimeout="10000"
+					ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Account Files"
+					metadata:id="3fe1160a-785f-4434-be2a-bd5dd854710a">
+					<file:filename-wildcard-filter
+						pattern="*account*.txt,*account*.csv" caseSensitive="false" />
+				</sftp:inbound-endpoint>
+			</processor-chain>
+		</poll>
+		<dw:transform-message doc:name="ListIterator">
+			<dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
-        </dw:transform-message>
-        <!-- 
-        <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/>
-        <flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
-         -->
-        <choice doc:name="lock policy">
-            <when expression="#['poll' == '${trigger.policy}']">
-                <expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
-                <batch:execute name="account" doc:name="account"/>
-            </when>
-            <otherwise>
-                <logger level="INFO" doc:name="Logger"/>
-            </otherwise>
-        </choice>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
-    </flow>
-    <flow name="vehicle_scheduler">
-        <poll doc:name="Poll">
-            <schedulers:cron-scheduler expression="0 30 1 * * ?" timeZone="Europe/London"/>
-            <watermark variable="lastVehicleCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <processor-chain doc:name="Processor Chain">
-                <sftp:inbound-endpoint port="22" responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Vehicle Files">
-                    <file:filename-wildcard-filter pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false"/>
-                </sftp:inbound-endpoint>
-            </processor-chain>
-        </poll>
-        <dw:transform-message doc:name="ListIterator">
-            <dw:set-payload><![CDATA[%dw 1.0
+		</dw:transform-message>
+		<!-- <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
+			<flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/> -->
+		<choice doc:name="lock policy">
+			<when expression="#['poll' == '${trigger.policy}']">
+				<expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
+				<batch:execute name="account" doc:name="account" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" />
+			</otherwise>
+		</choice>
+		<exception-strategy ref="defaultChoiceExceptionStrategy"
+			doc:name="Reference Exception Strategy" />
+	</flow>
+	<flow name="vehicle_scheduler">
+		<poll doc:name="Poll">
+			<schedulers:cron-scheduler expression="0 30 1 * * ?"
+				timeZone="Europe/London" />
+			<watermark variable="lastVehicleCSV" default-expression="${watermark.default.expression}"
+				selector="MAX" selector-expression="#[payload.LastModifiedDate]" />
+			<processor-chain doc:name="Processor Chain">
+				<sftp:inbound-endpoint port="22"
+					responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties"
+					doc:name="SFTP Vehicle Files">
+					<file:filename-wildcard-filter
+						pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false" />
+				</sftp:inbound-endpoint>
+			</processor-chain>
+		</poll>
+		<dw:transform-message doc:name="ListIterator">
+			<dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
-        </dw:transform-message>
-        <choice doc:name="lock policy">
-            <when expression="#['poll' == '${trigger.policy}']">
-                <expression-component doc:name="lock vehicle batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
-                <batch:execute name="vehicle" doc:name="vehicle"/>
-            </when>
-            <otherwise>
-                <logger level="INFO" doc:name="Logger"/>
-            </otherwise>
-        </choice>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
-    </flow>
-    <flow name="vehicleassociation_scheduler">
-        <poll doc:name="Poll">
-            <schedulers:cron-scheduler expression="0 0 2 * * ?" timeZone="Europe/London"/>
-            <watermark variable="lastVehicleAssociationCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <processor-chain doc:name="Processor Chain">
-                <sftp:inbound-endpoint port="22" responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP VehicleAssociation Files">
-                    <file:filename-wildcard-filter pattern="*vehicleassociation*.txt,*vehicleassociation*.csv" caseSensitive="false"/>
-                </sftp:inbound-endpoint>
-            </processor-chain>
-        </poll>
-        <dw:transform-message doc:name="ListIterator">
-            <dw:set-payload><![CDATA[%dw 1.0
+		</dw:transform-message>
+		<choice doc:name="lock policy">
+			<when expression="#['poll' == '${trigger.policy}']">
+				<expression-component doc:name="lock vehicle batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
+				<batch:execute name="vehicle" doc:name="vehicle" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" />
+			</otherwise>
+		</choice>
+		<exception-strategy ref="defaultChoiceExceptionStrategy"
+			doc:name="Reference Exception Strategy" />
+	</flow>
+	<flow name="vehicleassociation_scheduler">
+		<poll doc:name="Poll">
+			<schedulers:cron-scheduler expression="0 0 2 * * ?"
+				timeZone="Europe/London" />
+			<watermark variable="lastVehicleAssociationCSV"
+				default-expression="${watermark.default.expression}" selector="MAX"
+				selector-expression="#[payload.LastModifiedDate]" />
+			<processor-chain doc:name="Processor Chain">
+				<sftp:inbound-endpoint port="22"
+					responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties"
+					doc:name="SFTP VehicleAssociation Files">
+					<file:filename-wildcard-filter
+						pattern="*vehicleassociation*.txt,*vehicleassociation*.csv"
+						caseSensitive="false" />
+				</sftp:inbound-endpoint>
+			</processor-chain>
+		</poll>
+		<dw:transform-message doc:name="ListIterator">
+			<dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
-        </dw:transform-message>
-        <choice doc:name="lock policy">
-            <when expression="#['poll' == '${trigger.policy}']">
-                <expression-component doc:name="lock vehicleassociation batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
-                <batch:execute name="vehicleassociation" doc:name="vehicleassociation"/>
-            </when>
-            <otherwise>
-                <logger level="INFO" doc:name="Logger"/>
-            </otherwise>
-        </choice>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
-    </flow>
+		</dw:transform-message>
+		<choice doc:name="lock policy">
+			<when expression="#['poll' == '${trigger.policy}']">
+				<expression-component doc:name="lock vehicleassociation batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
+				<batch:execute name="vehicleassociation" doc:name="vehicleassociation" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" />
+			</otherwise>
+		</choice>
+		<exception-strategy ref="defaultChoiceExceptionStrategy"
+			doc:name="Reference Exception Strategy" />
+	</flow>
 </mule>

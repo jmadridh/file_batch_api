@@ -20,6 +20,8 @@
 		<mule.munit.support.version>3.8.3</mule.munit.support.version>
 		<mule.amq.version>1.0.1</mule.amq.version>
 		<mule.security.placeholder.version>1.6.5</mule.security.placeholder.version>
+		<!-- Batch Framework Version -->
+		<batch.framework.version>1.0.0-SNAPSHOT</batch.framework.version>
 		<!-- Logging and Exception Framework Version -->
 		<!-- <leh.version>1.0.0-SNAPSHOT</leh.version> -->
 	</properties>
@@ -232,6 +234,13 @@
 			<artifactId>mule-module-http</artifactId>
 			<version>${mule.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		
+		<!-- Batch Framework API -->
+		<dependency>
+			<groupId>com.inchcape.framework</groupId>
+            <artifactId>batch</artifactId>
+            <version>${batch.framework.version}</version>
 		</dependency>
 		
 		<!-- Logging and Exception Framework -->
