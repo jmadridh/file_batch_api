@@ -31,11 +31,15 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 
 		<spring:import resource="classpath:batch_framework_configuration.xml"
 			doc:name="Batch Framework Configuration" doc:description="Configuration Parameters" />
+			
+		
+		<spring:import resource="classpath:queue_mechanism.xml"
+			doc:name="Queueing Mechanism" doc:description="Queueing Mechanism Parameters" />
 
 		<!-- Import LEH resources -->
-		<!-- <spring:import resource="classpath:leh-common-request-preprocess.xml" 
-			/> <spring:import resource="classpath:leh-common-transaction-log-flow.xml" 
-			/> <spring:import resource="classpath:error-handling.xml" /> -->
+			<spring:import resource="classpath:leh-common-request-preprocess.xml"/> 
+			<spring:import resource="classpath:leh-common-transaction-log-flow.xml"/> 
+			<spring:import resource="classpath:error-handling.xml" />
 	</spring:beans>
 
 
@@ -65,10 +69,10 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 			maxThreadsActive="10" threadTTL="10000" doThreading="true"
 			poolExhaustedAction="WAIT" />
 	</configuration>
-	<!-- <http:listener-config name="file_batch_api_httpListenerConfiguration"
+	<http:listener-config name="file_batch_api_httpListenerConfiguration"
 		host="${http.host}" port="${http.port}" doc:name="HTTP Listener Configuration"
 		doc:description="Global 
-		HTTP Configuration" /> -->
+		HTTP Configuration" />
 	<sftp:endpoint host="${sftp.host}" port="${sftp.port}"
 		path="${sftp.path}" user="${sftp.username}" password="${sftp.password}"
 		name="file_batch_api_SFTPInboundProperties" responseTimeout="10000"

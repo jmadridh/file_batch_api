@@ -21,6 +21,12 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 
+	
+	<spring:beans>
+		<spring:import resource="classpath:batch_framework_configuration.xml"/>
+		<spring:import resource="classpath:queueing_mechanism.xml"/>
+		
+	</spring:beans>
 
 	<batch:job name="vehicle">
 
