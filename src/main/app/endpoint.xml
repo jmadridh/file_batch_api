@@ -7,15 +7,15 @@
 	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
 	xmlns:file="http://www.mulesoft.org/schema/mule/file"
 	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.8.5"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
-http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
-http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd 
-http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mule/schedulers/current/mule-schedulers.xsd 
-http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd 
-http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mule/schedulers/current/mule-schedulers.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 
 	
@@ -26,15 +26,15 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 			<flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
 		<choice doc:name="report batch">
 			<when expression="#[message.inboundProperties.'http.query.params'.account]">
-				<expression-component doc:name="Invoke or get reporting Account Logs" />
+				<expression-component doc:name="Invoke or get reporting Account Logs" ><![CDATA[payload;]]></expression-component>
 			</when>
 			<when expression="#[message.inboundProperties.'http.query.params'.vehicle]">
-				<expression-component doc:name="Invoke or get reporting Vehicle Logs" />
+				<expression-component doc:name="Invoke or get reporting Vehicle Logs" ><![CDATA[payload;]]></expression-component>
 			</when>
 			<when
 				expression="#[message.inboundProperties.'http.query.params'.vehicleassociation]">
 				<expression-component
-					doc:name="Invoke or get reporting VehicleAssociation Logs" />
+					doc:name="Invoke or get reporting VehicleAssociation Logs" ><![CDATA[payload;]]></expression-component>
 			</when>
 			<otherwise>
 				<logger message="No entity specified" level="INFO" doc:name="Logger" />
