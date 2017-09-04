@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:cluster="http://www.mulesoft.org/schema/mule/ee/cluster"
+<mule xmlns:cluster="http://www.mulesoft.org/schema/mule/ee/cluster" xmlns:core="http://www.mulesoft.org/schema/mule/core" 
 	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:file="http://www.mulesoft.org/schema/mule/file"
 	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
@@ -18,23 +18,19 @@ http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/m
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
 http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
 
-
+<!-- 
 	<secure-property-placeholder:config
 		name="file_batch_api_securePropertyPlaceholder" key="${secure.key}"
 		location="${env}.properties" doc:name="Secure Property Placeholder"
-		doc:description="Secure Property Placeholder" />
+		doc:description="Secure Property Placeholder" /> -->
 
 
 	<spring:beans>
-		<spring:bean id="PollSynchronizer" name="PollSynchronizer"
+		<spring:bean id="pollSynchronizer" name="Poll_Synchronizer"
 			class="com.inchcape.util.PollSynchronizer" scope="singleton" />
-
-		<spring:import resource="classpath:batch_framework_configuration.xml"
-			doc:name="Batch Framework Configuration" doc:description="Configuration Parameters" />
-			
-		
-		<spring:import resource="classpath:queue_mechanism.xml"
-			doc:name="Queueing Mechanism" doc:description="Queueing Mechanism Parameters" />
+		<spring:import resource="classpath:batch_framework_configuration.xml"/>
+		<spring:import resource="classpath:queue_mechanism.xml"/>
+		<spring:import resource="classpath:security_framework_configuration.xml"/>
 
 		<!-- Import LEH resources -->
 			<spring:import resource="classpath:leh-common-request-preprocess.xml"/> 
@@ -43,7 +39,7 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 	</spring:beans>
 
 
-	<configuration doc:name="DataweaveFunctions"
+	<!-- <configuration doc:name="DataweaveFunctions"
 		doc:description="Global Dataweave Functions Defined: globalOperation()">
 		<http:config useTransportForUris="false" />
 		<expression-language>
@@ -54,7 +50,7 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 			</global-functions>
 		</expression-language>
 
-	</configuration>
+	</configuration> -->
 	<configuration doc:name="ReceiverThreadingProfile"
 		doc:description="Threading 
 		Profile for Receiver Threads">
@@ -62,17 +58,22 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 			maxThreadsActive="10" threadTTL="20000" doThreading="true"
 			poolExhaustedAction="WAIT" />
 	</configuration>
-	<configuration doc:name="DispatcherThreadingProfile"
+	<!-- <configuration doc:name="DispatcherThreadingProfile"
 		doc:description="Threading 
 		Profile for Dispatcher Threads">
 		<default-dispatcher-threading-profile
 			maxThreadsActive="10" threadTTL="10000" doThreading="true"
 			poolExhaustedAction="WAIT" />
-	</configuration>
-	<http:listener-config name="file_batch_api_httpListenerConfiguration"
-		host="${http.host}" port="${http.port}" doc:name="HTTP Listener Configuration"
-		doc:description="Global 
-		HTTP Configuration" />
+	</configuration> -->
+	<!-- <http:listener-config name="file_batch_api_httpListenerConfiguration"
+		host="${http.batch.host}" port="${http.batch.port}" doc:name="HTTP Listener Configuration"
+		doc:description="Global HTTP Configuration" /> -->
+		
+		
+	<http:request-config name="http_Request_Configuration" host="0.0.0.0" port="8082" doc:name="HTTP Request Configuration"/>
+    
+	
+	
 	<sftp:endpoint host="${sftp.host}" port="${sftp.port}"
 		path="${sftp.path}" user="${sftp.username}" password="${sftp.password}"
 		name="file_batch_api_SFTPInboundProperties" responseTimeout="10000"

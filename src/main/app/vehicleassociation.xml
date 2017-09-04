@@ -21,12 +21,12 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 
-	
+	<!-- 
 	<spring:beans>
 		<spring:import resource="classpath:batch_framework_configuration.xml"/>
-		<spring:import resource="classpath:queueing_mechanism.xml"/>
+		<spring:import resource="classpath:queue_mechanism.xml"/>
 		
-	</spring:beans>
+	</spring:beans> -->
 
 	<batch:job name="vehicleassociation">
 
@@ -49,11 +49,11 @@ payload]]></dw:set-payload>
                 <flow-ref name="queue" doc:name="queue"/>
             </batch:step>
             <batch:step name="RecordToVehicleAssociationSystemAPI">
-                <http:request config-ref="HTTP_Request_Configuration" path="vehicle_association_api" method="POST" doc:name="HTTP"/>
+                <http:request config-ref="http_Request_Configuration" path="vehicle_association_api" method="POST" doc:name="HTTP"/>
             </batch:step>
 
 			<batch:step name="LogFailureSteps" accept-policy="ONLY_FAILURES"
-				accept-expression="#[]">
+				accept-expression="#[payload.id!=null]">
 				<logger level="ERROR" doc:name="Failure" message="Failure because #[payload]" />
 			</batch:step>
 		</batch:process-records>

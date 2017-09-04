@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata"
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:core="http://www.mulesoft.org/schema/mule/core" 
 	xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers"
 	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
 	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
@@ -16,15 +16,16 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mule/schedulers/current/mule-schedulers.xsd">
 
-
+<!-- 
 	<spring:beans>
 		<spring:import resource="classpath:batch_framework_configuration.xml"/>
-		<spring:import resource="classpath:queueing_mechanism.xml"/>
+		<spring:import resource="classpath:queue_mechanism.xml"/>
+		<spring:import resource="classpath:security_framework_configuration.xml"/>
 		<spring:import resource="classpath:leh-common-request-preprocess.xml" />
 		<spring:import resource="classpath:leh-common-transaction-log-flow.xml" />
 		<spring:import resource="classpath:error-handling.xml" />
 		
-	</spring:beans>
+	</spring:beans> -->
 	
 	<flow name="endpointsFlow">
 		<http:listener config-ref="file_batch_api_httpListenerConfiguration"
@@ -57,14 +58,12 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
 				timeZone="Europe/London" />
 			<watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}"
 				selector="MAX" selector-expression="#[payload.LastModifiedDate]" />
-			<processor-chain doc:name="Processor Chain">
-				<sftp:inbound-endpoint responseTimeout="10000"
-					ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Account Files"
-					metadata:id="3fe1160a-785f-4434-be2a-bd5dd854710a">
+			
+				<sftp:inbound-endpoint ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Account Files">
 					<file:filename-wildcard-filter
 						pattern="*account*.txt,*account*.csv" caseSensitive="false" />
 				</sftp:inbound-endpoint>
-			</processor-chain>
+			
 		</poll>
 		<dw:transform-message doc:name="ListIterator">
 			<dw:set-payload><![CDATA[%dw 1.0
@@ -93,8 +92,7 @@ payload]]></dw:set-payload>
 			<watermark variable="lastVehicleCSV" default-expression="${watermark.default.expression}"
 				selector="MAX" selector-expression="#[payload.LastModifiedDate]" />
 			<processor-chain doc:name="Processor Chain">
-				<sftp:inbound-endpoint port="22"
-					responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties"
+				<sftp:inbound-endpoint responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties"
 					doc:name="SFTP Vehicle Files">
 					<file:filename-wildcard-filter
 						pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false" />
