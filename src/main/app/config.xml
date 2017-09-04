@@ -18,12 +18,6 @@ http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/m
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
 http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
 
-<!-- 
-	<secure-property-placeholder:config
-		name="file_batch_api_securePropertyPlaceholder" key="${secure.key}"
-		location="${env}.properties" doc:name="Secure Property Placeholder"
-		doc:description="Secure Property Placeholder" /> -->
-
 
 	<spring:beans>
 		<spring:bean id="pollSynchronizer" name="Poll_Synchronizer"
@@ -38,26 +32,13 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 			<spring:import resource="classpath:error-handling.xml" />
 	</spring:beans>
 
-
-	<!-- <configuration doc:name="DataweaveFunctions"
-		doc:description="Global Dataweave Functions Defined: globalOperation()">
-		<http:config useTransportForUris="false" />
-		<expression-language>
-			<global-functions>
-				def globalOperation(){
-				return "globalOperation"
-				}
-			</global-functions>
-		</expression-language>
-
-	</configuration> -->
-	<configuration doc:name="ReceiverThreadingProfile"
+	<!-- <configuration doc:name="ReceiverThreadingProfile"
 		doc:description="Threading 
 		Profile for Receiver Threads">
 		<default-receiver-threading-profile
 			maxThreadsActive="10" threadTTL="20000" doThreading="true"
 			poolExhaustedAction="WAIT" />
-	</configuration>
+	</configuration> -->
 	<!-- <configuration doc:name="DispatcherThreadingProfile"
 		doc:description="Threading 
 		Profile for Dispatcher Threads">
@@ -65,16 +46,10 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 			maxThreadsActive="10" threadTTL="10000" doThreading="true"
 			poolExhaustedAction="WAIT" />
 	</configuration> -->
-	<!-- <http:listener-config name="file_batch_api_httpListenerConfiguration"
-		host="${http.batch.host}" port="${http.batch.port}" doc:name="HTTP Listener Configuration"
-		doc:description="Global HTTP Configuration" /> -->
-		
 		
 	<http:request-config name="http_Request_Configuration" host="0.0.0.0" port="8082" doc:name="HTTP Request Configuration"/>
     
-	
-	
-	<sftp:endpoint host="${sftp.host}" port="${sftp.port}"
+	<!-- <sftp:endpoint host="${sftp.host}" port="${sftp.port}"
 		path="${sftp.path}" user="${sftp.username}" password="${sftp.password}"
 		name="file_batch_api_SFTPInboundProperties" responseTimeout="10000"
 		doc:name="SFTP" exchange-pattern="one-way"
@@ -83,7 +58,7 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 		Strategy">
 		<reconnect frequency="${sftp.reconnectFrequency}" count="${sftp.reconnection}"
 			blocking="false" />
-	</sftp:endpoint>
+	</sftp:endpoint> -->
 
 	<!-- Anypoint MQ Configuration Parameters -->
 	<!-- <anypoint-mq:config name="Anypoint_MQ_Configuration" doc:name="Anypoint 
