@@ -45,17 +45,14 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 			doc:name="Reference Exception Strategy" />
 	</flow>
 	<flow name="account_scheduler">
-		<!-- <poll doc:name="Poll"> -->
-			<!-- <schedulers:cron-scheduler expression="0 0 1 * * ?"
-				timeZone="Europe/London" />
-			<watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}"
-				selector="MAX" selector-expression="#[payload.LastModifiedDate]" />
-			 -->
-				<sftp:inbound-endpoint responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties" doc:name="SFTP Account Files">
-					<file:filename-wildcard-filter
-						pattern="*account*.txt,*account*.csv" caseSensitive="false" />
-				</sftp:inbound-endpoint>
-	<!-- 	</poll> -->
+        <sftp:inbound-endpoint responseTimeout="10000" ref="sftpInboundProperties" doc:name="SFTP Account Files">
+            <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
+        </sftp:inbound-endpoint>
+        <!-- <poll doc:name="Poll">
+            <schedulers:cron-scheduler expression="0 0 1 * * ?" timeZone="Europe/London"/> -->
+            <!-- <watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.lastModifiedDate]"/> -->
+        <!-- </poll> -->
+	
 		<dw:transform-message doc:name="ListIterator">
 			<dw:set-payload><![CDATA[%dw 1.0
 %output application/java
@@ -76,24 +73,19 @@ payload]]></dw:set-payload>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
 	</flow>
-	<flow name="vehicle_scheduler">
-		<!-- <poll doc:name="Poll">
-			<schedulers:cron-scheduler expression="0 30 1 * * ?"
-				timeZone="Europe/London" />
-			<watermark variable="lastVehicleCSV" default-expression="${watermark.default.expression}"
-				selector="MAX" selector-expression="#[payload.LastModifiedDate]" />
-			<processor-chain doc:name="Processor Chain"> -->
-				<sftp:inbound-endpoint responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties"
-					doc:name="SFTP Vehicle Files">
-					<file:filename-wildcard-filter
-						pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false" />
-				</sftp:inbound-endpoint>
-			<!-- </processor-chain>
-		</poll> -->
+	<!-- <flow name="vehicle_scheduler">
+        <poll doc:name="Poll">
+            <schedulers:cron-scheduler expression="0 30 1 * * ?" timeZone="Europe/London"/>
+            <watermark variable="lastVehicleCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.lastModifiedDate]"/>
+            <sftp:outbound-endpoint responseTimeout="10000" ref="sftpInboundProperties" doc:name="SFTP Vehicle Files">
+                <file:filename-wildcard-filter pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false"/>
+            </sftp:outbound-endpoint>
+        </poll>
+			
 		<dw:transform-message doc:name="ListIterator">
 			<dw:set-payload><![CDATA[%dw 1.0
 %output application/java
----
+
 payload]]></dw:set-payload>
 		</dw:transform-message>
 		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
@@ -109,27 +101,20 @@ payload]]></dw:set-payload>
 		</choice>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
-	</flow>
-	<flow name="vehicleassociation_scheduler">
-		<!-- <poll doc:name="Poll">
-			<schedulers:cron-scheduler expression="0 0 2 * * ?"
-				timeZone="Europe/London" />
-			<watermark variable="lastVehicleAssociationCSV"
-				default-expression="${watermark.default.expression}" selector="MAX"
-				selector-expression="#[payload.LastModifiedDate]" />
-			<processor-chain doc:name="Processor Chain"> -->
-				<sftp:inbound-endpoint	responseTimeout="10000" ref="file_batch_api_SFTPInboundProperties"
-					doc:name="SFTP VehicleAssociation Files">
-					<file:filename-wildcard-filter
-						pattern="*vehicleassociation*.txt,*vehicleassociation*.csv"
-						caseSensitive="false" />
-				</sftp:inbound-endpoint>
-			<!-- </processor-chain>
-		</poll> -->
+	</flow> -->
+	<!-- <flow name="vehicleassociation_scheduler">
+        <poll doc:name="Poll">
+            <schedulers:cron-scheduler expression="0 0 2 * * ?" timeZone="Europe/London"/>
+            <watermark variable="lastVehicleAssociationCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.lastModifiedDate]"/>
+            <sftp:outbound-endpoint responseTimeout="10000" ref="sftpInboundProperties" doc:name="SFTP VehicleAssociation Files">
+                <file:filename-wildcard-filter pattern="*vehicleassociation*.txt,*vehicleassociation*.csv" caseSensitive="false"/>
+            </sftp:outbound-endpoint>
+        </poll>
+		
 		<dw:transform-message doc:name="ListIterator">
 			<dw:set-payload><![CDATA[%dw 1.0
 %output application/java
----
+
 payload]]></dw:set-payload>
 		</dw:transform-message>
 		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
@@ -145,7 +130,7 @@ payload]]></dw:set-payload>
 		</choice>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
-	</flow>
+	</flow> -->
 
 
 </mule>
