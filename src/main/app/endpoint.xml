@@ -41,26 +41,29 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 			</otherwise>
 		</choice>
 		<set-payload value="#[payload]" doc:name="Reporting Log" />
+        <flow-ref name="leh-common-trans-log-complete-subflow" doc:name="leh-common-trans-log-complete-subflow"/>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
 	</flow>
 	<flow name="account_scheduler">
-        <sftp:inbound-endpoint responseTimeout="10000" ref="sftpInboundProperties" doc:name="SFTP Account Files">
-            <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
-        </sftp:inbound-endpoint>
         <!-- <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 0 1 * * ?" timeZone="Europe/London"/> -->
             <!-- <watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.lastModifiedDate]"/> -->
+        
+        
+        <sftp:inbound-endpoint responseTimeout="10000" ref="sftpInboundProperties" doc:name="SFTP Account Files">
+            <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
+        </sftp:inbound-endpoint>
+        
         <!-- </poll> -->
-	
-		<dw:transform-message doc:name="ListIterator">
-			<dw:set-payload><![CDATA[%dw 1.0
+        <dw:transform-message doc:name="ListIterator">
+            <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
-		</dw:transform-message>
-		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
-		<flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
+        </dw:transform-message>
+        
+		<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
 		<choice doc:name="lock policy">
 			<when expression="#['poll' == '${trigger.policy}']">
 				<expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
@@ -70,6 +73,7 @@ payload]]></dw:set-payload>
 				<logger level="INFO" doc:name="Logger" />
 			</otherwise>
 		</choice>
+        <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
 	</flow>
