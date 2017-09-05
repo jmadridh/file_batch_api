@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-
+    
 	
 	<flow name="endpointsFlow">
 		<http:listener config-ref="file_batch_api_httpListenerConfiguration"
@@ -64,6 +64,7 @@ payload]]></dw:set-payload>
         </dw:transform-message>
         
 		<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
+        <flow-ref name="batch_common_variables" doc:name="batch_common_variables"/>
 		<choice doc:name="lock policy">
 			<when expression="#['poll' == '${trigger.policy}']">
 				<expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
@@ -73,6 +74,7 @@ payload]]></dw:set-payload>
 				<logger level="INFO" doc:name="Logger" />
 			</otherwise>
 		</choice>
+        <file:outbound-endpoint path="${folder.output}\#[flowVars.market]\#[flowVars.type_object]" outputPattern="${file.name.pattern.account}" responseTimeout="10000" doc:name="Move to Output"/>
         <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
@@ -136,5 +138,6 @@ payload]]></dw:set-payload>
 			doc:name="Reference Exception Strategy" />
 	</flow> -->
 
+	
 
 </mule>
