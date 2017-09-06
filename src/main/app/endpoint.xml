@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers"
@@ -16,9 +16,9 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
-http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
     
-	
 	<flow name="endpointsFlow">
 		<http:listener config-ref="file_batch_api_httpListenerConfiguration"
 			path="/start" allowedMethods="GET" doc:name="GET reporting batch" />
@@ -37,7 +37,7 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 					doc:name="Invoke or get reporting VehicleAssociation Logs" ><![CDATA[payload;]]></expression-component>
 			</when>
 			<otherwise>
-				<logger message="No entity specified" level="INFO" doc:name="Logger" />
+                <expression-component doc:name="Not Logs"><![CDATA[app.name;]]></expression-component>
 			</otherwise>
 		</choice>
 		<set-payload value="#[payload]" doc:name="Reporting Log" />
@@ -45,40 +45,7 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
 	</flow>
-	<flow name="account_scheduler">
-        <!-- <poll doc:name="Poll">
-            <schedulers:cron-scheduler expression="0 0 1 * * ?" timeZone="Europe/London"/> -->
-            <!-- <watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.lastModifiedDate]"/> -->
-        
-        
-        <sftp:inbound-endpoint responseTimeout="10000" ref="sftpInboundProperties" doc:name="SFTP Account Files">
-            <file:filename-wildcard-filter pattern="*account*.txt,*account*.csv" caseSensitive="false"/>
-        </sftp:inbound-endpoint>
-        
-        <!-- </poll> -->
-        <dw:transform-message doc:name="ListIterator">
-            <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload]]></dw:set-payload>
-        </dw:transform-message>
-        
-		<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
-        <flow-ref name="batch_common_variables" doc:name="batch_common_variables"/>
-		<choice doc:name="lock policy">
-			<when expression="#['poll' == '${trigger.policy}']">
-				<expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
-				<batch:execute name="account" doc:name="account" />
-			</when>
-			<otherwise>
-				<logger level="INFO" doc:name="Logger" />
-			</otherwise>
-		</choice>
-        <file:outbound-endpoint path="${folder.output}\#[flowVars.market]\#[flowVars.type_object]" outputPattern="${file.name.pattern.account}" responseTimeout="10000" doc:name="Move to Output"/>
-        <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
-		<exception-strategy ref="global-exception-strategy"
-			doc:name="Reference Exception Strategy" />
-	</flow>
+	
 	<!-- <flow name="vehicle_scheduler">
         <poll doc:name="Poll">
             <schedulers:cron-scheduler expression="0 30 1 * * ?" timeZone="Europe/London"/>

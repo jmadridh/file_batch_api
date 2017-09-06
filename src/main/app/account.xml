@@ -20,6 +20,59 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+
+	<flow name="GRB_account">
+        <!-- <http:listener config-ref="file_batch_api_httpListenerConfiguration" 
+        	path="/prueba" allowedMethods="GET" doc:name="HTTP"/>
+	
+		<logger  level="INFO" doc:name="Logger" message="//input/#[flow.name.split('_')[0]]/#[flow.name.split('_')[1]]"/> -->
+        <!-- <poll doc:name="Poll">
+            <schedulers:cron-scheduler expression="0 0 1 * * ?" timeZone="Europe/London"/> -->
+            <!-- <watermark variable="lastAccountCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.lastModifiedDate]"/> -->
+         
+        <!-- 
+        <sftp:inbound-endpoint ref="sftpInboundProperties" doc:name="SFTP Account Files">
+        	<file:filename-wildcard-filter pattern="*.txt,*.csv" caseSensitive="true"/>
+        </sftp:inbound-endpoint>
+         -->
+        <sftp:inbound-endpoint host="${sftp.host}" port="${sftp.port}" path="${sftp.path.grb.account}"
+		 user="${sftp.username}" password="${sftp.password}"
+		 pollingFrequency="${sftp.pollingFrequency}" responseTimeout="10000" 
+		name="sftpInboundProperties" doc:name="sftpInboundProperties" doc:description="SFTP Inbound Configuration Properties.
+Include: 
+- Polling Frequency 
+- Reconnect Strategy">
+            <file:filename-wildcard-filter pattern="*.csv" caseSensitive="false"/>
+
+			<reconnect frequency="${sftp.reconnectFrequency}" count="${sftp.reconnection}" blocking="false" />
+	</sftp:inbound-endpoint>
+         
+        <!-- </poll> -->
+        <dw:transform-message doc:name="ListIterator">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+commonVariables:flow.name.split('_')]]></dw:set-payload>
+        </dw:transform-message>
+        
+		<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
+        <flow-ref name="batch_common_variables" doc:name="batch_common_variables"/>
+		<choice doc:name="lock policy">
+			<when expression="#['poll' == '${trigger.policy}']">
+				<expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
+				<batch:execute name="account" doc:name="account" />
+			</when>
+			<otherwise>
+                <expression-component doc:name="No Lock Policy"><![CDATA[app.name;]]></expression-component>
+			</otherwise>
+		</choice>
+        <file:outbound-endpoint path="${folder.output}\#[flowVars.market]\#[flowVars.type_object]" outputPattern="${file.name.pattern.account}" responseTimeout="10000" doc:name="Move to Output"/>
+        <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
+		<exception-strategy ref="global-exception-strategy"
+			doc:name="Reference Exception Strategy" />
+	</flow>
+	
+	
    <batch:job name="account">
 
 		<batch:process-records>

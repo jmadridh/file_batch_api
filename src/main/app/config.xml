@@ -33,34 +33,9 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 			<spring:import resource="classpath:error-handling.xml" />
 	</spring:beans>
 
-	<!-- <configuration doc:name="ReceiverThreadingProfile"
-		doc:description="Threading 
-		Profile for Receiver Threads">
-		<default-receiver-threading-profile
-			maxThreadsActive="10" threadTTL="20000" doThreading="true"
-			poolExhaustedAction="WAIT" />
-	</configuration> -->
-	<!-- <configuration doc:name="DispatcherThreadingProfile"
-		doc:description="Threading 
-		Profile for Dispatcher Threads">
-		<default-dispatcher-threading-profile
-			maxThreadsActive="10" threadTTL="10000" doThreading="true"
-			poolExhaustedAction="WAIT" />
-	</configuration> -->
-		
 	<http:request-config name="http_Request_Configuration" host="0.0.0.0" port="8082" doc:name="HTTP Request Configuration"/>
-    
-	<!-- <sftp:endpoint host="${sftp.host}" port="${sftp.port}"
-		path="${sftp.path}" user="${sftp.username}" password="${sftp.password}"
-		name="file_batch_api_SFTPInboundProperties" responseTimeout="10000"
-		doc:name="SFTP" exchange-pattern="one-way"
-		doc:description="SFTP 
-		Inbound Configuration Properties. Include: - Polling Frequency - Reconnect 
-		Strategy">
-		<reconnect frequency="${sftp.reconnectFrequency}" count="${sftp.reconnection}"
-			blocking="false" />
-	</sftp:endpoint> -->
 
+    
 	<!-- Anypoint MQ Configuration Parameters -->
 	<!-- <anypoint-mq:config name="Anypoint_MQ_Configuration" doc:name="Anypoint 
 		MQ Configuration"> <anypoint-mq:provider url="${amq.url}" clientId="${amq.clientid}" 
