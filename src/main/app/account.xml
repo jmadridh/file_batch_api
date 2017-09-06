@@ -35,29 +35,33 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
         	<file:filename-wildcard-filter pattern="*.txt,*.csv" caseSensitive="true"/>
         </sftp:inbound-endpoint>
          -->
-        <sftp:inbound-endpoint host="${sftp.host}" port="${sftp.port}" path="${sftp.path.grb.account}"
+        <sftp:inbound-endpoint host="${sftp.host}" port="${sftp.port}" path="//"
 		 user="${sftp.username}" password="${sftp.password}"
 		 pollingFrequency="${sftp.pollingFrequency}" responseTimeout="10000" 
 		name="sftpInboundProperties" doc:name="sftpInboundProperties" doc:description="SFTP Inbound Configuration Properties.
 Include: 
 - Polling Frequency 
-- Reconnect Strategy">
+- Reconnect Strategy" archiveDir="output/GRB/account" archiveTempReceivingDir="input/GRB/account">
             <file:filename-wildcard-filter pattern="*.csv" caseSensitive="false"/>
 
 			<reconnect frequency="${sftp.reconnectFrequency}" count="${sftp.reconnection}" blocking="false" />
 	</sftp:inbound-endpoint>
-         
-        <!-- </poll> -->
-        <dw:transform-message doc:name="ListIterator">
+        <dw:transform-message doc:name="elements">
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
-commonVariables:flow.name.split('_')]]></dw:set-payload>
+payload]]></dw:set-payload>
         </dw:transform-message>
+        <flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/>
+         
+        <!-- </poll> -->
+
         
 		<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
-        <flow-ref name="batch_common_variables" doc:name="batch_common_variables"/>
-		<choice doc:name="lock policy">
+        <expression-component doc:name="market"><![CDATA[flowVars.market=flow.name.split('_')[0];]]></expression-component>
+        <expression-component doc:name="object"><![CDATA[flowVars.object=flow.name.split('_')[1];]]></expression-component>
+
+		<choice doc:name="lock">
 			<when expression="#['poll' == '${trigger.policy}']">
 				<expression-component doc:name="lock account batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
 				<batch:execute name="account" doc:name="account" />
@@ -66,7 +70,7 @@ commonVariables:flow.name.split('_')]]></dw:set-payload>
                 <expression-component doc:name="No Lock Policy"><![CDATA[app.name;]]></expression-component>
 			</otherwise>
 		</choice>
-        <file:outbound-endpoint path="${folder.output}\#[flowVars.market]\#[flowVars.type_object]" outputPattern="${file.name.pattern.account}" responseTimeout="10000" doc:name="Move to Output"/>
+        <file:outbound-endpoint path="${sftp.archive.grb.account}" outputPattern="#[function:datestamp:yyyy-MM-dd_HH-mm-ss.SSS]" responseTimeout="10000" doc:name="Move to Output"/>
         <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
@@ -76,11 +80,12 @@ commonVariables:flow.name.split('_')]]></dw:set-payload>
    <batch:job name="account">
 
 		<batch:process-records>
-			<batch:step name="EachRecordFile">
+			<batch:step name="EachRecordFile" accept-expression="#[payload != null]">
                     <validation:all doc:name="Data Validation">
-                        <validation:validations>
-                            <validation:is-empty value="#[payload]" message="File is empty" exceptionClass="org.apache.poi.EmptyFileException"/>
-                        </validation:validations>
+                    <validation:validations>
+                        <validation:is-not-empty value="#[payload]" message="Record was empty" exceptionClass="com.ic.leh.CustomException"/>
+                    </validation:validations>
+
                     </validation:all>
                     <dw:transform-message doc:name="Transform Record">
                         <dw:set-payload><![CDATA[%dw 1.0
@@ -97,7 +102,8 @@ payload]]></dw:set-payload>
 					doc:name="RouteToTopic"/> -->
 			</batch:step>
             <batch:step name="RecordToAccountSystemAPI">
-                <http:request config-ref="http_Request_Configuration" path="account_sys_api" method="POST" doc:name="HTTP"/>
+                <!-- <http:request config-ref="http_Request_Configuration" path="account_sys_api" method="POST" doc:name="HTTP"/> -->
+                <logger message="#[payload]" level="INFO" doc:name="Logger"/>
             </batch:step>
 			<batch:step name="LogFailureSteps" accept-policy="ONLY_FAILURES"
 				accept-expression="#[payload.id!=null]">
