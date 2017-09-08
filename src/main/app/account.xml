@@ -35,13 +35,13 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
         	<file:filename-wildcard-filter pattern="*.txt,*.csv" caseSensitive="true"/>
         </sftp:inbound-endpoint>
          -->
-        <sftp:inbound-endpoint host="${sftp.host}" port="${sftp.port}" path="//"
+        <sftp:inbound-endpoint host="${sftp.host}" port="${sftp.port}" path="//input/GRB/account"
 		 user="${sftp.username}" password="${sftp.password}"
 		 pollingFrequency="${sftp.pollingFrequency}" responseTimeout="10000" 
 		name="sftpInboundProperties" doc:name="sftpInboundProperties" doc:description="SFTP Inbound Configuration Properties.
 Include: 
 - Polling Frequency 
-- Reconnect Strategy" archiveDir="output/GRB/account" archiveTempReceivingDir="input/GRB/account">
+- Reconnect Strategy" archiveDir="output/GRB/account" archiveTempReceivingDir="input/GRB/account" fileAge="${sftp.file.age}">
             <file:filename-wildcard-filter pattern="*.csv" caseSensitive="false"/>
 
 			<reconnect frequency="${sftp.reconnectFrequency}" count="${sftp.reconnection}" blocking="false" />
