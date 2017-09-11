@@ -43,6 +43,7 @@ local.properties
 # Studio-specific #
 # --------------- #
 .studio/
+.mule/
 flows/
 target/
 src/main/api/.repository/ 

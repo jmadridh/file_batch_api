@@ -88,7 +88,7 @@ flow.name.split('_')[2]]]></dw:set-variable>
 	</flow>
 	 -->
 	
-   <batch:job name="${batch.country.business.object}" max-failed-records="10">
+   <batch:job name="account" max-failed-records="${batch.max.failed.records}">
 
 		<batch:process-records>
 			<batch:step name="EachRecordFile" accept-expression="#[payload != null]">
