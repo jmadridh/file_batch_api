@@ -39,8 +39,28 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 ---
 payload]]></dw:set-payload>
         </dw:transform-message>
-        <batch:execute name="account" doc:name="account"/>
+        <batch:execute name="batch" doc:name="batch"/>
         <expression-component doc:name="stopping batch"><![CDATA[app.registry.'input'.stop();]]></expression-component>
 	</flow>
+	
+	
+    <batch:job name="batch" max-failed-records="-1">
+        <batch:process-records>
+            <batch:step name="Batch_Step">
+                <batch:commit size="5" doc:name="Batch Commit">
+                    <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+                </batch:commit>
+            </batch:step>
+            <batch:step name="Failures" accept-policy="ONLY_FAILURES">
+                <set-payload value="#[getStepExceptions()]" doc:name="Failed Record"/>
+                <json:object-to-json-transformer doc:name="Object to JSON"/>
+                <logger message="#[payload]" level="ERROR" doc:name="Logger"/>
+            </batch:step>
+        </batch:process-records>
+        <batch:on-complete>
+            <json:object-to-json-transformer doc:name="Object to JSON"/>
+            <logger message="#[message]" level="INFO" doc:name="Logger"/>
+        </batch:on-complete>
+    </batch:job>
 
 </mule>

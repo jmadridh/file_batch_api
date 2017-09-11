@@ -44,6 +44,7 @@ local.properties
 # --------------- #
 .studio/
 .mule/
+catalog/
 flows/
 target/
 src/main/api/.repository/ 

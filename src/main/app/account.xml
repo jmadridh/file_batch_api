@@ -88,16 +88,16 @@ flow.name.split('_')[2]]]></dw:set-variable>
 	</flow>
 	 -->
 	
-   <batch:job name="account" max-failed-records="${batch.max.failed.records}">
+   <batch:job name="account" max-failed-records="-1">
 
 		<batch:process-records>
 			<batch:step name="EachRecordFile" accept-expression="#[payload != null]">
-                    <validation:all doc:name="Data Validation">
+                    <!-- <validation:all doc:name="Data Validation">
                     <validation:validations>
                         <validation:is-not-empty value="#[payload]" message="Record was empty" exceptionClass="com.ic.leh.CustomException"/>
                     </validation:validations>
 
-                    </validation:all>
+                    </validation:all> -->
                 <batch:commit size="${sftp.batch.commit.size}" doc:name="Batch Commit">
                     <flow-ref name="queue" doc:name="queue"/>
                 </batch:commit>
