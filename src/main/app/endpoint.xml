@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers"
@@ -17,13 +17,14 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
     
-	<flow name="endpointsFlow">
+	<flow name="reportingFlow">
 		<http:listener config-ref="file_batch_api_httpListenerConfiguration"
-			path="/start" allowedMethods="GET" doc:name="GET reporting batch" />
+			path="/report" allowedMethods="GET" doc:name="GET reporting batch" />
 		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
-			<flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
+			<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
 		<choice doc:name="report batch">
 			<when expression="#[message.inboundProperties.'http.query.params'.account]">
 				<expression-component doc:name="Invoke or get reporting Account Logs" ><![CDATA[payload;]]></expression-component>
@@ -41,7 +42,69 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 			</otherwise>
 		</choice>
 		<set-payload value="#[payload]" doc:name="Reporting Log" />
-        <flow-ref name="leh-common-trans-log-complete-subflow" doc:name="leh-common-trans-log-complete-subflow"/>
+        <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
+		<exception-strategy ref="global-exception-strategy"
+			doc:name="Reference Exception Strategy" />
+	</flow>
+	
+	<flow name="settingFlow">
+		<http:listener config-ref="file_batch_api_httpListenerConfiguration"
+			path="/setting" allowedMethods="POST" doc:name="POST settings" />
+		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
+			<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
+        <dw:transform-message doc:name="outboundProperties">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload]]></dw:set-payload>
+            <dw:set-property propertyName="object"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.object]]></dw:set-property>
+            <dw:set-property propertyName="country"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.country]]></dw:set-property>
+            <dw:set-property propertyName="business"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.business]]></dw:set-property>
+            <dw:set-property propertyName="timestandard"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.schedule.poll.timestandard]]></dw:set-property>
+            <dw:set-property propertyName="path"><![CDATA[%dw 1.0
+%output application/java
+---
+"//input/" ++ payload.country ++ "/" ++ payload.business ++ "/" ++ payload.object]]></dw:set-property>
+            <dw:set-property propertyName="cronexpression"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.schedule.poll.cron.seconds as :string ++ " " ++ 
+payload.schedule.poll.cron.minutes as :string ++ " " ++ 
+payload.schedule.poll.cron.hours as :string ++ " " ++ 
+payload.schedule.poll.cron.dayOfMonth as :string ++ " " ++ 
+payload.schedule.poll.cron.month as :string ++ " " ++ 
+payload.schedule.poll.cron.dayOfWeek as :string ++ " " ++ 
+payload.schedule.poll.cron.year as :string]]></dw:set-property>
+            <dw:set-property propertyName="frequencyMilliseconds"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.reconnectionStrategyTargetSystem.frequencyMilliseconds]]></dw:set-property>
+            <dw:set-property propertyName="attempts"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.reconnectionStrategyTargetSystem.attempts]]></dw:set-property>
+            <dw:set-property propertyName="connectorName"><![CDATA[%dw 1.0
+%output application/java
+---
+"sftp" ++ payload.object]]></dw:set-property>
+
+        </dw:transform-message>
+        <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
+        <component class="com.inchcape.util.DynamicQuartzGenerator" doc:name="DynamicQuartzGenerator"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
 	</flow>
