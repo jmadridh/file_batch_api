@@ -53,7 +53,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
 			<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
         <dw:transform-message doc:name="outboundProperties">
-            <dw:set-payload><![CDATA[%dw 1.0
+			<dw:set-payload ><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
@@ -73,10 +73,22 @@ payload.business]]></dw:set-property>
 %output application/java
 ---
 payload.schedule.poll.timestandard]]></dw:set-property>
-            <dw:set-property propertyName="path"><![CDATA[%dw 1.0
+            <dw:set-property propertyName="inputPath"><![CDATA[%dw 1.0
 %output application/java
 ---
 "//input/" ++ payload.country ++ "/" ++ payload.business ++ "/" ++ payload.object]]></dw:set-property>
+            <dw:set-property propertyName="outputPath"><![CDATA[%dw 1.0
+%output application/java
+---
+"//output/" ++ payload.country ++ "/" ++ payload.business ++ "/" ++ payload.object]]></dw:set-property>
+            <dw:set-property propertyName="errorPath"><![CDATA[%dw 1.0
+%output application/java
+---
+"//error/" ++ payload.country ++ "/" ++ payload.business ++ "/" ++ payload.object]]></dw:set-property>
+            <dw:set-property propertyName="archivePath"><![CDATA[%dw 1.0
+%output application/java
+---
+"//archive/" ++ payload.country ++ "/" ++ payload.business ++ "/" ++ payload.object]]></dw:set-property>
             <dw:set-property propertyName="cronexpression"><![CDATA[%dw 1.0
 %output application/java
 ---
@@ -99,7 +111,6 @@ payload.reconnectionStrategyTargetSystem.attempts]]></dw:set-property>
 %output application/java
 ---
 "sftp" ++ payload.object]]></dw:set-property>
-
         </dw:transform-message>
         <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
         <component class="com.inchcape.util.DynamicQuartzGenerator" doc:name="DynamicQuartzGenerator"/>
