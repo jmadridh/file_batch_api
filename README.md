@@ -1,22 +1,89 @@
-# Migration Process into Salesforce 
-#### Inchcape ####
+# Batch Framework Application 
+---
+Developed for Inchcape PLC.
 
-This batch process recovers data from CRM systems where are based flat files with determined format. 
-A specific format could facilitate and provide quick integration with this batch process. 
 
-### Connect with SFTP 
+## Description
+---
+This Batch API provides a mechanism to push data to Salesforce Cloud from a hierarchy folder SFTP server. 
 
-### Connect with Anypoint MQ 
 
-### How it works ### 
+### Pre-requirements
+---
 
-This application accepts CSV files or flat files which contains account information, then validates minimal data format to finally uploads the message to Anypoint MQ. 
+There are a number of pre-requirements to run this batch api. 
+By group;
+> * File
+> * System API
+> * Queueing Mechanism
 
-The [Secure File Connector](https://docs.mulesoft.com/mule-user-guide/v/3.8/sftp-connector) polls the input folder for new files on specific dates. When it spots a new file, it reads it and mark as processed to pass the content to the [Dataweave Transformer](https://docs.mulesoft.com/mule-user-guide/v/3.8/dataweave). This one will automatically maps the input file records to output files for Anypoint MQ. When all the records in the file has been converted, a collection of object will be used to send to the topics in [Anypoint MQ](https://docs.mulesoft.com/anypoint-mq/).
 
-### Documentation ###
+In the first group of pre-requirements, it involves and describe the set of features that a file **MAY HAVE**.
+1. The file **MUST** be stored previously in a folder SFTP.
+2. The file **FOLLOW** a pattern name with a *CSV* extension.
+3. The file **HAS** 'read/write' permissions.
+4. The file **HAS* a file structure human readable.
 
-This batch could be extended. 
+In the second group of pre-requirements, it is related to the bridge system which serves to operate functions to push data into Salesforce Cloud. 
+1. The System API **SHOULD** be running and listening on the HTTPS port.
+2. The System API **MUST** performs the operation required to push data in a secured channel communication.
+3. The System API **SHOULD** track each transaction in a logging system.
+
+In the final set of pre-requirements, those are enclosed to the queue mechanism: 
+1. To persist records from the file, the batch api *WILL* publish them to an Exchange in Anypoint MQ Service configured to Inchcape.
+2. The Queue *SHOULD HAVE* a TTL in order to let the retry mechanism to process all those records in case of unexpected errors. 
+3. The Exchange and Queue *SHOULD HAVE* a pattern name that correlate with the batch interface. 
+4. The group of exchange and queue *SHOULD HAVE* previously configured.
+
+
+### Endpoints
+---
+Current available endpoints
+
+*Settings*
+`https://globalbatchapi.cloudhub.io/batch/setting`
+Endpoint to set parameter configurations.
+
+#### Body
+---
+```
+Under construction
+```
+#### Response
+---
+```
+Under construction
+```
+
+*Reporting*
+`https://globalbatchapi.cloudhub.io/batch/report`
+Endpoint to retrieve latest execution of batch interface.
+
+#### Body
+---
+```
+Under construction
+```
+
+#### Response
+```
+Under construction
+```
+
+### Batch Steps
+---
+*Under construction*
+
+### Connectors and Processors  
+
+The [Secure File Connector](https://docs.mulesoft.com/mule-user-guide/v/3.8/sftp-connector)
+
+The [HTTPS Reference](https://docs.mulesoft.com/api-manager/https-reference)
+
+The [Anypoint MQ](https://docs.mulesoft.com/anypoint-mq/)
+
+The [Dataweave Transformer](https://docs.mulesoft.com/mule-user-guide/v/3.8/dataweave)
+
 
 ### Go further ###
 
