@@ -22,7 +22,7 @@
 		<!-- Batch Framework Version -->
 		<batch.framework.version>1.0.0-SNAPSHOT</batch.framework.version>
 		<!-- Security Framework Version -->
-		<security.framework.version>1.0.0-SNAPSHOT</security.framework.version>
+		<!-- <security.framework.version>1.0.0-SNAPSHOT</security.framework.version> -->
 		<!-- Logging and Exception Framework Version -->
 		<leh.version>1.0.0-SNAPSHOT</leh.version>
 	</properties>
@@ -46,6 +46,10 @@
                             <groupId>com.mulesoft.security</groupId>
                             <artifactId>mule-module-security-property-placeholder</artifactId>
                         </inclusion> -->
+                    <inclusion>
+                            <groupId>com.mulesoft.security</groupId>
+                            <artifactId>mule-module-security-property-placeholder</artifactId>
+                        </inclusion>
                     </inclusions>
 				</configuration>
 			</plugin>
@@ -171,11 +175,11 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- security property placeholder -->
-		<!-- <dependency>
+		 <dependency>
 			<groupId>com.mulesoft.security</groupId>
 			<artifactId>mule-module-security-property-placeholder</artifactId>
 			<version>${mule.security.placeholder.version}</version>
-		</dependency> -->
+		</dependency>
 
 		<dependency>
 			<groupId>org.mule.modules</groupId>
@@ -243,14 +247,14 @@
             <artifactId>batch</artifactId>
             <version>${batch.framework.version}</version>
 		</dependency>
-		
-		<!-- Security Framework API -->
+		<!-- 
+		Security Framework API
 		<dependency>
 			<groupId>com.inchcape.framework</groupId>
             <artifactId>security</artifactId>
             <version>${security.framework.version}</version>
 		</dependency>
-		
+		 -->
 		<!-- Logging and Exception Framework -->
         <dependency>
             <groupId>com.ic.leh.common</groupId>

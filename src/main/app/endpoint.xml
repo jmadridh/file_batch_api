@@ -21,8 +21,8 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
     
 	<flow name="reportingFlow">
-		<http:listener config-ref="file_batch_api_httpListenerConfiguration"
-			path="/report" allowedMethods="GET" doc:name="GET reporting batch" />
+		<http:listener config-ref="InchcapeHttpListenerConfiguration"
+			path="/batch/report" allowedMethods="GET" doc:name="GET reporting batch" />
 		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
 			<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
 		<choice doc:name="report batch">
@@ -48,8 +48,8 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 	</flow>
 	
 	<flow name="settingFlow">
-		<http:listener config-ref="file_batch_api_httpListenerConfiguration"
-			path="/setting" allowedMethods="POST" doc:name="POST settings" />
+		<http:listener config-ref="InchcapeHttpListenerConfiguration"
+			path="/batch/setting" allowedMethods="POST" doc:name="POST settings" />
 		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
 			<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
         <dw:transform-message doc:name="outboundProperties">

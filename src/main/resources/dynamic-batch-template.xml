@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
  
-<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:quartz="http://www.mulesoft.org/schema/mule/quartz" xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+<mule xmlns:secure-property-placeholder="http://www.mulesoft.org/schema/mule/secure-property-placeholder" xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:quartz="http://www.mulesoft.org/schema/mule/quartz" xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:file="http://www.mulesoft.org/schema/mule/file"
 	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" 
 xmlns:http="http://www.mulesoft.org/schema/mule/http" 
 xmlns:jms="http://www.mulesoft.org/schema/mule/jms" 
@@ -24,43 +24,80 @@ http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/quartz http://www.mulesoft.org/schema/mule/quartz/current/mule-quartz.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
-http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
-	<context:property-placeholder location="classpath:${env}.properties,common.properties"
-		ignore-resource-not-found="true" system-properties-mode="OVERRIDE" />
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mulesoft.org/schema/mule/secure-property-placeholder/current/mule-secure-property-placeholder.xsd">
+	<!-- <context:property-placeholder location="classpath:${env}.properties,common.properties"
+		ignore-resource-not-found="true" system-properties-mode="OVERRIDE" /> -->
 		
+	
+	
+	<!-- 
+	<spring:beans>
+		<spring:bean id="pollSynchronizer" name="PollSynchronizer"
+			class="com.inchcape.util.PollSynchronizer" scope="singleton" />
+		<spring:import resource="classpath:batch_framework_configuration.xml"/>
+		<spring:import resource="classpath:batch_queue_mechanism.xml"/>
+		<spring:import resource="classpath:batch_target_systems.xml"/>
+		<spring:import resource="classpath:security_framework_configuration.xml"/>
+
+		Import LEH resources
+			<spring:import resource="classpath:leh-common-request-preprocess.xml"/> 
+			<spring:import resource="classpath:leh-common-transaction-log-flow.xml"/> 
+			<spring:import resource="classpath:error-handling.xml" />
+	</spring:beans>
+	 -->
+	
+	
+	<anypoint-mq:config name="AMQConfiguration" clientMode="ASYNC" doc:name="Anypoint MQ Configuration"> 
+        <anypoint-mq:provider url="${anypointmq.url}" clientId="${anypointmq.client.id}" clientSecret="${anypointmq.client.secret}"/>
+    </anypoint-mq:config>
+    <secure-property-placeholder:config name="Secure_Property_Placeholder" key="${secure.key}" location="classpath:${env}.properties,common.properties" ignoreResourceNotFound="true" systemPropertiesMode="OVERRIDE" doc:name="Secure Property Placeholder"/>
+    
         <flow name="input" initialState="stopped">
-			<sftp:inbound-endpoint host="${sftp.host}" port="${sftp.port}" path="${sftp.path.country.business.object}" user="${sftp.username}" password="${sftp.password}"   responseTimeout="10000" name="SFTP" doc:name="SFTP">
+			<sftp:inbound-endpoint host="${sftp.host}" port="${sftp.port}" path="${sftp.input.country.business.object}" user="${sftp.username}" password="${sftp.password}"   responseTimeout="10000" name="SFTP" doc:name="SFTP" fileAge="60000">
                 <file:filename-wildcard-filter pattern="*.csv" caseSensitive="false"/>
                 <!-- <reconnect blocking="false" frequency="${sftp.frequency.country.business.object}" count="${sftp.attempts.country.business.object}"/> -->
             </sftp:inbound-endpoint>
-        <dw:transform-message doc:name="payload">
+        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+        <expression-component doc:name="dateExpression"><![CDATA[message.outboundProperties.dateExpression=server.dateTime.withTimeZone('UTC').format("ddMMyyyyHHmmss");]]></expression-component>
+        <sftp:outbound-endpoint exchange-pattern="one-way" outputPattern="#[message.outboundProperties.dateExpression]#['.csv']" host="${sftp.host}" port="${sftp.port}" path="${sftp.output.country.business.object}" user="${sftp.username}" password="${sftp.password}" responseTimeout="10000" doc:name="output"/>
+        <dw:transform-message doc:name="Transform Message">
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
         </dw:transform-message>
+
         <batch:execute name="batch" doc:name="batch"/>
-        <expression-component doc:name="stopping batch"><![CDATA[app.registry.'input'.stop();]]></expression-component>
+ 
+        <expression-component doc:name="stop flow"><![CDATA[app.registry.'input'.stop();]]></expression-component>
 	</flow>
 	
 	
-    <batch:job name="batch" max-failed-records="-1">
+     <batch:job name="batch" max-failed-records="-1">
         <batch:process-records>
-            <batch:step name="Batch_Step">
+            <batch:step name="Queueing">
+                <anypoint-mq:publish config-ref="AMQConfiguration" destination="account-exchange" doc:name="account-exchange">
+                    <anypoint-mq:message-builder messageId="#[java.util.UUID.randomUUID().toString()]"/>
+                </anypoint-mq:publish>
+
+            </batch:step>
+            <batch:step name="TargetSystem">
                 <batch:commit size="5" doc:name="Batch Commit">
                     <logger message="#[payload]" level="INFO" doc:name="Logger"/>
                 </batch:commit>
             </batch:step>
             <batch:step name="Failures" accept-policy="ONLY_FAILURES">
-                <set-payload value="#[getStepExceptions()]" doc:name="Failed Record"/>
-                <json:object-to-json-transformer doc:name="Object to JSON"/>
-                <logger message="#[payload]" level="ERROR" doc:name="Logger"/>
+                <anypoint-mq:publish config-ref="AMQConfiguration" destination="error-queue" doc:name="Error Queue">
+                    <anypoint-mq:message-builder messageId="#[java.util.UUID.randomUUID().toString()]"/>
+                </anypoint-mq:publish>
             </batch:step>
         </batch:process-records>
         <batch:on-complete>
             <json:object-to-json-transformer doc:name="Object to JSON"/>
             <logger message="#[message]" level="INFO" doc:name="Logger"/>
         </batch:on-complete>
-    </batch:job>
+    </batch:job> 
 
 </mule>
