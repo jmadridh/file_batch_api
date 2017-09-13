@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers"
@@ -18,7 +18,8 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
-http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
     
 	<flow name="reportingFlow">
 		<http:listener config-ref="InchcapeHttpListenerConfiguration"
@@ -52,7 +53,14 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 			path="/batch/setting" allowedMethods="POST" doc:name="POST settings" />
 		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
 			<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
-        <dw:transform-message doc:name="outboundProperties">
+        <validation:all doc:name="Validation">
+            <validation:validations>
+                <validation:is-not-empty value="#[payload.object]" message="object is required" exceptionClass="java.lang.IllegalArgumentException"/>
+                <validation:is-not-empty value="#[payload.business]" message="business is required" exceptionClass="java.lang.IllegalArgumentException"/>
+                <validation:is-not-empty value="#[payload.country]" message="country is required" exceptionClass="java.lang.IllegalArgumentException"/>
+            </validation:validations>
+        </validation:all>
+        <dw:transform-message doc:name="MapPropertiesConfiguration">
 			<dw:set-payload ><![CDATA[%dw 1.0
 %output application/java
 ---
@@ -102,15 +110,19 @@ payload.schedule.poll.cron.year as :string]]></dw:set-property>
             <dw:set-property propertyName="frequencyMilliseconds"><![CDATA[%dw 1.0
 %output application/java
 ---
-payload.reconnectionStrategyTargetSystem.frequencyMilliseconds]]></dw:set-property>
+payload.reconnectionStrategyTargetSystem.frequencyMilliseconds when payload.reconnectionStrategyTargetSystem.frequencyMilliseconds? otherwise p("reconnection.frequencyMilliseconds")]]></dw:set-property>
             <dw:set-property propertyName="attempts"><![CDATA[%dw 1.0
 %output application/java
 ---
-payload.reconnectionStrategyTargetSystem.attempts]]></dw:set-property>
+payload.reconnectionStrategyTargetSystem.attempts when payload.reconnectionStrategyTargetSystem.attempts? otherwise p("reconnection.attempts")]]></dw:set-property>
             <dw:set-property propertyName="connectorName"><![CDATA[%dw 1.0
 %output application/java
 ---
 "sftp" ++ payload.object]]></dw:set-property>
+            <dw:set-property propertyName="maxFailedRecords"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.maxFailedRecords when payload.maxFailedRecords? otherwise p("max.failed.records")]]></dw:set-property>
         </dw:transform-message>
         <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
         <component class="com.inchcape.util.DynamicQuartzGenerator" doc:name="DynamicQuartzGenerator"/>
