@@ -175,11 +175,10 @@ payload.reconnectionStrategyTargetSystem.attempts as :string when payload.reconn
 ---
 payload.maxFailedRecords as :string when payload.maxFailedRecords? otherwise p("batch.max.failed.records") as :string]]></dw:set-property>
         </dw:transform-message>
-        <set-payload value="#[payload]" doc:name="Set Payload"/>
 
-        <!-- <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
+        <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
         <component class="com.inchcape.util.DynamicQuartzGenerator" doc:name="DynamicQuartzGenerator"/>
-        <json:object-to-json-transformer doc:name="Object to JSON"/> -->
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
         <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
