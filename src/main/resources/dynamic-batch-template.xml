@@ -51,13 +51,17 @@ http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mules
         <sftp:outbound-endpoint exchange-pattern="one-way" outputPattern="#[message.outboundProperties.fileOutput]#['.csv']" host="${sftp.host}" port="${sftp.port}" path="${sftp.output.country.business.object}" user="${sftp.username}" password="${sftp.password}" responseTimeout="10000" doc:name="output"/>
         <string-to-byte-array-transformer doc:name="String to Byte Array"/>
 
-        <dw:transform-message doc:name="Transform Message">
+        <dw:transform-message doc:name="Collection">
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
+        <!--     <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+
+payload]]></dw:set-payload> -->
         </dw:transform-message>
-<!--         <batch:execute name="batch" doc:name="batch"/> -->
+         <batch:execute name="batch" doc:name="batch"/>
         <expression-component doc:name="stop flow"><![CDATA[app.registry.'input'.stop();]]></expression-component>
         <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
 	</flow>
