@@ -179,6 +179,7 @@ payload.maxFailedRecords as :string when payload.maxFailedRecords? otherwise p("
         <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
         <component class="com.inchcape.util.DynamicQuartzGenerator" doc:name="DynamicQuartzGenerator"/>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
+
         <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />

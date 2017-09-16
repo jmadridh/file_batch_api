@@ -41,35 +41,33 @@ http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mules
     </anypoint-mq:config>
     <secure-property-placeholder:config name="Secure_Property_Placeholder" key="${secure.key}" location="classpath:${env}.properties,common.properties" ignoreResourceNotFound="true" systemPropertiesMode="OVERRIDE" doc:name="Secure Property Placeholder"/>
     
+    
         <flow name="input" initialState="stopped">
-			<sftp:inbound-endpoint host="${sftp.host}" port="${sftp.port}" path="${sftp.input.country.business.object}" user="${sftp.username}" password="${sftp.password}"   responseTimeout="10000" name="SFTP" doc:name="SFTP" fileAge="60000">
+			<sftp:inbound-endpoint host="${sftp.host}" port="${sftp.port}" path="${sftp.input.country.business.object}" user="${sftp.username}" password="${sftp.password}"   responseTimeout="10000" name="SFTP" doc:name="SFTP" fileAge="${sftp.file.age}">
                 <file:filename-wildcard-filter pattern="*.csv" caseSensitive="false"/>
                 <reconnect blocking="false" frequency="${sftp.frequency.country.business.object}" count="${sftp.attempts.country.business.object}"/>
             </sftp:inbound-endpoint>
-        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+        <object-to-byte-array-transformer doc:name="Object to Byte Array"/>
         <expression-component doc:name="fileNameOutput"><![CDATA[message.outboundProperties.fileOutput=org.apache.commons.io.FilenameUtils.getBaseName(message.inboundProperties.originalFilename)+ server.dateTime.withTimeZone('UTC').format("ddMMyyyyHHmmss");]]></expression-component>
         <sftp:outbound-endpoint exchange-pattern="one-way" outputPattern="#[message.outboundProperties.fileOutput]#['.csv']" host="${sftp.host}" port="${sftp.port}" path="${sftp.output.country.business.object}" user="${sftp.username}" password="${sftp.password}" responseTimeout="10000" doc:name="output"/>
-        <string-to-byte-array-transformer doc:name="String to Byte Array"/>
 
         <dw:transform-message doc:name="Collection">
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload]]></dw:set-payload>
-        <!--     <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
-
-payload]]></dw:set-payload> -->
         </dw:transform-message>
+        
          <batch:execute name="batch" doc:name="batch"/>
         <expression-component doc:name="stop flow"><![CDATA[app.registry.'input'.stop();]]></expression-component>
         <exception-strategy ref="global-exception-strategy" doc:name="Reference Exception Strategy"/>
 	</flow>
-	
+
 	
      <batch:job name="batch" max-failed-records="${batch.max.failed.records}">
         <batch:process-records>
             <batch:step name="Queueing">
+                <json:object-to-json-transformer doc:name="Object to JSON"/>
                 <anypoint-mq:publish config-ref="AMQConfiguration" destination="account-exchange" doc:name="account-exchange">
                     <anypoint-mq:message-builder messageId="#[java.util.UUID.randomUUID().toString()]"/>
                 </anypoint-mq:publish>
