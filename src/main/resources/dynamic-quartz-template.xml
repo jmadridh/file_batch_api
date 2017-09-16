@@ -17,6 +17,10 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
         <quartz:inbound-endpoint jobName="Trigger" cronExpression="${cron.expression.country.business.object}" cronTimeZone="${cron.timestandard.country.business.object}" repeatInterval="0" connector-ref="Quartz" responseTimeout="10000" doc:name="Quartz" repeatCount="1">
             <quartz:event-generator-job/>
         </quartz:inbound-endpoint>
+        <logger message="Starting batch : #[message.outboundProperties]" level="INFO" doc:name="Logger"/>
+        <set-payload value="#[payload]" doc:name="Set Payload"/>
+    <!--     
         <expression-component doc:name="starting batch"><![CDATA[app.registry.'input'.start();]]></expression-component>
+     -->
     </flow>
 </mule>

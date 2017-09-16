@@ -53,11 +53,21 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 			path="/batch/setting" allowedMethods="POST" doc:name="POST settings" />
 		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
 			<flow-ref name="leh-common-service-log-start-subflow" doc:name="leh-common-service-log-start-subflow"/>
-        <validation:all doc:name="Validation">
+        <dw:transform-message doc:name="Payload">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload]]></dw:set-payload>
+        </dw:transform-message>
+        <validation:all doc:name="RequiredParameters">
             <validation:validations>
                 <validation:is-not-empty value="#[payload.object]" message="object is required" exceptionClass="java.lang.IllegalArgumentException"/>
                 <validation:is-not-empty value="#[payload.business]" message="business is required" exceptionClass="java.lang.IllegalArgumentException"/>
                 <validation:is-not-empty value="#[payload.country]" message="country is required" exceptionClass="java.lang.IllegalArgumentException"/>
+            	<validation:is-not-empty value="#[payload.schedule.poll.cron.dayOfMonth]"  message="It is required dayOfMonth" exceptionClass="java.lang.IllegalArgumentException"/>
+                <validation:is-not-empty value="#[payload.schedule.poll.cron.dayOfWeek]"  message="It is required dayOfWeek" exceptionClass="java.lang.IllegalArgumentException"/>
+                <validation:is-false expression="#[payload.schedule.poll.cron.dayOfWeek == '?' &amp;&amp; payload.schedule.poll.cron.dayOfMonth == '?']" message="Do not allowed same value" exceptionClass="java.lang.IllegalArgumentException"/>
+                <validation:is-false expression="#[payload.schedule.poll.cron.dayOfWeek == '*' &amp;&amp; payload.schedule.poll.cron.dayOfMonth == '*']" message="Do not allowed same value" exceptionClass="java.lang.IllegalArgumentException"/>
             </validation:validations>
         </validation:all>
         <dw:transform-message doc:name="MapPropertiesConfiguration">
@@ -97,36 +107,79 @@ payload.schedule.poll.timestandard]]></dw:set-property>
 %output application/java
 ---
 "//archive/" ++ payload.country ++ "/" ++ payload.business ++ "/" ++ payload.object]]></dw:set-property>
+
+            <dw:set-property propertyName="seconds"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.schedule.poll.cron.seconds as :string when payload.schedule.poll.cron.seconds? otherwise p('commoncronexpression')]]></dw:set-property>
+
+            <dw:set-property propertyName="minutes"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.schedule.poll.cron.minutes as :string when payload.schedule.poll.cron.minutes? otherwise p('commoncronexpression')]]></dw:set-property>
+
+            <dw:set-property propertyName="hours"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.schedule.poll.cron.hours as :string when payload.schedule.poll.cron.hours? otherwise p('commoncronexpression')]]></dw:set-property>
+
+            <dw:set-property propertyName="dayOfMonth"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.schedule.poll.cron.dayOfMonth as :string when payload.schedule.poll.cron.dayOfWeek == "?" otherwise p('commondayofweekmonth')]]></dw:set-property>
+
+            <dw:set-property propertyName="month"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.schedule.poll.cron.month as :string when payload.schedule.poll.cron.month? otherwise "*"]]></dw:set-property>
+
+
+            <dw:set-property propertyName="dayOfWeek"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.schedule.poll.cron.dayOfWeek as :string when payload.schedule.poll.cron.dayOfMonth == "?" otherwise p('commondayofweekmonth')]]></dw:set-property>
+
+
+            <dw:set-property propertyName="year"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.schedule.poll.cron.year as :string when payload.schedule.poll.cron.year? otherwise p('commoncronexpression')]]></dw:set-property>
+
+
             <dw:set-property propertyName="cronexpression"><![CDATA[%dw 1.0
 %output application/java
 ---
-payload.schedule.poll.cron.seconds as :string ++ " " ++ 
-payload.schedule.poll.cron.minutes as :string ++ " " ++ 
-payload.schedule.poll.cron.hours as :string ++ " " ++ 
-payload.schedule.poll.cron.dayOfMonth as :string ++ " " ++ 
-payload.schedule.poll.cron.month as :string ++ " " ++ 
-payload.schedule.poll.cron.dayOfWeek as :string ++ " " ++ 
-payload.schedule.poll.cron.year as :string]]></dw:set-property>
+outboundProperties.seconds ++ " " ++ 
+outboundProperties.minutes ++ " " ++ 
+outboundProperties.hours ++ " " ++ 
+outboundProperties.dayOfMonth ++ " " ++ 
+outboundProperties.month ++ " " ++ 
+outboundProperties.dayOfWeek ++ " " ++ 
+outboundProperties.year ]]></dw:set-property>
+
+
             <dw:set-property propertyName="frequencyMilliseconds"><![CDATA[%dw 1.0
 %output application/java
 ---
-payload.reconnectionStrategyTargetSystem.frequencyMilliseconds when payload.reconnectionStrategyTargetSystem.frequencyMilliseconds? otherwise p("reconnection.frequencyMilliseconds")]]></dw:set-property>
+payload.reconnectionStrategyTargetSystem.frequencyMilliseconds as :string when payload.reconnectionStrategyTargetSystem.frequencyMilliseconds? otherwise p("reconnection.frequencyMilliseconds") as :string]]></dw:set-property>
             <dw:set-property propertyName="attempts"><![CDATA[%dw 1.0
 %output application/java
 ---
-payload.reconnectionStrategyTargetSystem.attempts when payload.reconnectionStrategyTargetSystem.attempts? otherwise p("reconnection.attempts")]]></dw:set-property>
+payload.reconnectionStrategyTargetSystem.attempts as :string when payload.reconnectionStrategyTargetSystem.attempts? otherwise p("reconnection.attempts") as :string]]></dw:set-property>
             <dw:set-property propertyName="connectorName"><![CDATA[%dw 1.0
 %output application/java
 ---
-"sftp" ++ payload.object]]></dw:set-property>
+"sftp" ++ payload.country ++ payload.business ++ payload.object]]></dw:set-property>
             <dw:set-property propertyName="maxFailedRecords"><![CDATA[%dw 1.0
 %output application/java
 ---
-payload.maxFailedRecords when payload.maxFailedRecords? otherwise p("max.failed.records")]]></dw:set-property>
+payload.maxFailedRecords as :string when payload.maxFailedRecords? otherwise p("batch.max.failed.records") as :string]]></dw:set-property>
         </dw:transform-message>
-        <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
+        <set-payload value="#[payload]" doc:name="Set Payload"/>
+
+        <!-- <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
         <component class="com.inchcape.util.DynamicQuartzGenerator" doc:name="DynamicQuartzGenerator"/>
-        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/> -->
         <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
