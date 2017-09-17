@@ -9,12 +9,13 @@ This Batch API provides a mechanism to migrate data into Salesforce Cloud from a
 
 ## Table of Content 
 
-- [Pre-requirements](#Pre-requirements)
-- [Endpoints](#Endpoints)
-- [Connectors and Processors](#Connectors)
-- [Third Party](#ThirdParty)
-- [Limitations](#Limitations)
-- [Go Further](#GoFurther)
+- [Pre-requirements](#pre-requirements)
+- [Endpoints](#endpoints)
+- [Batch Structure](#batch-structure)
+- [Connectors and Processors](#connectors-and-processors)
+- [Third Party](#third-party)
+- [Limitations](#limitations)
+- [Go Further](#go-further)
 
 ### Pre-requirements
 ---
@@ -187,7 +188,7 @@ Tag the message ID with an random UUID.
 
 Write on logs the result of execution
 
-### Connectors  
+### Connectors and Processors 
 ---
 The [Secure File Connector](https://docs.mulesoft.com/mule-user-guide/v/3.8/sftp-connector)
 
@@ -198,13 +199,13 @@ The [Anypoint MQ](https://docs.mulesoft.com/anypoint-mq/)
 The [Dataweave Transformer](https://docs.mulesoft.com/mule-user-guide/v/3.8/dataweave)
 
 
-### ThirdParty
+### Third Party
 ---
 
-**Common Utilities Framework**
+**Common Utilities Framework** with Components to build dynamic properties and flows.
 
 
-**Logging and Exception Handling**
+**Logging and Exception Handling** with Components to register log level category and catch exceptions.
 
 
 ### Limitations 
