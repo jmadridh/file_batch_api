@@ -1,10 +1,10 @@
 # Global Batch Application 
----
+
 Developed for Inchcape PLC.
 
 
 ## Description
----
+
 This Batch API provides a mechanism to migrate data into Salesforce Cloud from a hierarchy folder SFTP server. 
 
 
@@ -18,14 +18,14 @@ By group;
 > * Queueing Mechanism
 
 
-In the first group of pre-requirements, it involves and describe the set of features that a file **MAY HAVE**.
+In the first group of pre-requirements, it involves:
 1. The file **MUST** be stored previously in a folder SFTP.
 2. The file **FOLLOW** a pattern name with a *CSV* extension.
 3. The file **HAS** 'read/write' permissions.
-4. The file **HAS* a file structure human readable.
+4. The file **HAS** a file structure human readable.
 
 In the second group of pre-requirements, it is related to the bridge system which serves to operate functions to push data into Salesforce Cloud. 
-1. The System API **SHOULD** be running and listening on the HTTPS port.
+1. The System API **SHOULD** be running and listening on the HTTP port.
 2. The System API **MUST** performs the operation required to push data in a secured channel communication.
 3. The System API **SHOULD** track each transaction in a logging system.
 
@@ -36,18 +36,21 @@ In the final set of pre-requirements, those are enclosed to the queue mechanism:
 4. The group of exchange and queue *SHOULD HAVE* previously configured.
 
 
+### Limitations
+
+
 ### Endpoints
----
-Current available endpoints
 
 #### Settings
+
 `http://globalbatchapi.cloudhub.io/batch/setting`
 Endpoint to set parameter configurations.
+
 *HTTP Method*
+
 `POST`
 
 ##### Body
----
 ```
 {
 	"object": "account",
@@ -75,8 +78,8 @@ Endpoint to set parameter configurations.
 	"parent": "parent"
 }
 ```
+
 ##### Response
----
 ```
 {
     "server": "LUK-HK43PF2.corp.capgemini.com",
@@ -95,9 +98,13 @@ Endpoint to set parameter configurations.
 ```
 
 *Reporting*
+
 `http://globalbatchapi.cloudhub.io/batch/report`
+
 Endpoint to retrieve latest execution of batch interface.
+
 *HTTP Method*
+
 `GET`
 
 #### Body
