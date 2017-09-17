@@ -91,7 +91,7 @@ Endpoint to set parameter configurations.
 ##### Response
 ```
 {
-    "server": "LUK-HK43PF2.corp.capgemini.com",
+    "server": "mockserver.aws.com",
     "batchInterface": "Greecedistributionaccount",
     "dirs": {
         "input": "//input/Greece/distribution/account",
