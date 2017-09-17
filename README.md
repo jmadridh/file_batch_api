@@ -78,7 +78,20 @@ Endpoint to set parameter configurations.
 ##### Response
 ---
 ```
-Under construction
+{
+    "server": "LUK-HK43PF2.corp.capgemini.com",
+    "batchInterface": "Greecedistributionaccount",
+    "dirs": {
+        "input": "//input/Greece/distribution/account",
+        "output": "//output/Greece/distribution/account",
+        "error": "//error/Greece/distribution/account",
+        "archive": "//archive/Greece/distribution/account"
+    },
+    "executionTime": "0/15 * * ? * * *",
+    "timezone": "UTC",
+    "targetSystemAPI": "account_soap_sys_api",
+    "timeSetting": "08-09-2017 22:32:06"
+}
 ```
 
 *Reporting*

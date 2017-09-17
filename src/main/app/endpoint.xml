@@ -195,6 +195,7 @@ payload.parent as :string when payload.isParent == false otherwise payload.objec
 payload.object as :string ++ p("path.target.system.api") as :string]]></dw:set-property>
 
         </dw:transform-message>
+        <set-variable variableName="timeSetting" value="#[server.dateTime.format(&quot;dd-MM-yyyy HH:mm:ss&quot;)]" doc:name="timeSetting"/>
 <!-- 
         <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
         <component class="com.inchcape.util.DynamicQuartzGenerator" doc:name="DynamicQuartzGenerator"/> -->
@@ -214,7 +215,7 @@ payload.object as :string ++ p("path.target.system.api") as :string]]></dw:set-p
 	"executionTime": outboundProperties.cronexpression,
 	"timezone": outboundProperties.timestandard,
 	"targetSystemAPI" : outboundProperties.targetSystemAPI, 
-	"time": flowVars.logTimeStamp
+	"timeSetting": flowVars.timeSetting
 }]]></dw:set-payload>
         </dw:transform-message>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
