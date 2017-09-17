@@ -36,14 +36,14 @@ In the final set of pre-requirements, those are enclosed to the queue mechanism:
 4. The group of exchange and queue *SHOULD HAVE* previously configured.
 
 
-### Limitations
-
-
 ### Endpoints
 
 #### Settings
 
 `http://globalbatchapi.cloudhub.io/batch/setting`
+
+Description
+
 Endpoint to set parameter configurations.
 
 *HTTP Method*
@@ -97,6 +97,8 @@ Endpoint to set parameter configurations.
 }
 ```
 
+
+
 *Reporting*
 
 `http://globalbatchapi.cloudhub.io/batch/report`
@@ -108,7 +110,6 @@ Endpoint to retrieve latest execution of batch interface.
 `GET`
 
 #### Body
----
 ```
 Under construction
 ```
@@ -122,7 +123,9 @@ Under construction
 **Load and Dispatch**
 
 *Poll*
+
 As a result from configuration parameters using resource **/batch/setting**
+
 **Example**: 
 ```
 	"schedule": {
@@ -141,31 +144,39 @@ As a result from configuration parameters using resource **/batch/setting**
 	}
 ```
 **Result**:
+
 `0/15 * * ? * * *`
 means every 15 seconds through minutes, hours, month and years. **Note**: it is required parameter: `timestandard` of execution.
 
 Follow the syntax [Free Formatter Cron Expression](https://www.freeformatter.com/cron-expression-generator-quartz.html) 
 
 *Watermark*
+
 Pattern to select the file is commanded by: 
-.File CSV 
-.File Age: 60000ms (**1min**)
+> File CSV 
+> File Age: 60000ms (**1min**)
 
 
 **Batch Steps**
+
 *Queueing and Target System API*
+
 1. Route message to the proper exchange in Anypoint MQ according to the name of Batch Interface configured.
 Tag the message ID with an random UUID. 
 2. Route message to the Target System API according to the name of Batch Interface configured.
 3. Retrieve message from the Queue respectively. One of the following action is possible: 
 	HTTP Status response was successfully, then send ACK
 	HTTP Status response is not successful, then send message to Error Queue
+
 *Failures*
+
 1. Route messages to Error Queue because message was malformed
 
 
 **On Complete**
+
 *Report*
+
 Write on logs the result of execution
 
 ### Connectors and Processors  
@@ -178,6 +189,9 @@ The [Anypoint MQ](https://docs.mulesoft.com/anypoint-mq/)
 
 The [Dataweave Transformer](https://docs.mulesoft.com/mule-user-guide/v/3.8/dataweave)
 
+### Limitations 
+
+Endpoint `batch/setting` can only set one batch interface at time.
 
 ### Go further ###
 
