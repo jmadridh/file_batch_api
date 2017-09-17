@@ -7,6 +7,13 @@ Developed for Inchcape PLC.
 
 This Batch API provides a mechanism to migrate data into Salesforce Cloud from a hierarchy folder SFTP server. 
 
+## Table of Content 
+
+- [Pre-requirements](#Pre-requirements)
+- [Endpoints](#Endpoints)
+- [Connectors and Processors](#Connectors and Processors)
+- [Limitations](#Limitations)
+- [Go Further](#Go Further)
 
 ### Pre-requirements
 ---
@@ -180,7 +187,7 @@ Tag the message ID with an random UUID.
 Write on logs the result of execution
 
 ### Connectors and Processors  
-
+---
 The [Secure File Connector](https://docs.mulesoft.com/mule-user-guide/v/3.8/sftp-connector)
 
 The [HTTPS Reference](https://docs.mulesoft.com/api-manager/https-reference)
@@ -190,7 +197,7 @@ The [Anypoint MQ](https://docs.mulesoft.com/anypoint-mq/)
 The [Dataweave Transformer](https://docs.mulesoft.com/mule-user-guide/v/3.8/dataweave)
 
 ### Limitations 
-
+---
 Endpoint `batch/setting` can only set one batch interface at time.
 
 ### Go further ###
