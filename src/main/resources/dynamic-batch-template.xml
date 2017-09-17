@@ -39,7 +39,8 @@ http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mules
 	<anypoint-mq:config name="AMQConfiguration" clientMode="ASYNC" doc:name="Anypoint MQ Configuration"> 
         <anypoint-mq:provider url="${anypointmq.url}" clientId="${anypointmq.client.id}" clientSecret="${anypointmq.client.secret}"/>
     </anypoint-mq:config>
-    <secure-property-placeholder:config name="Secure_Property_Placeholder" key="${secure.key}" location="classpath:${env}.properties,common.properties" ignoreResourceNotFound="true" systemPropertiesMode="OVERRIDE" doc:name="Secure Property Placeholder"/>
+    
+    <secure-property-placeholder:config name="Dynamic_Secure_Property_Placeholder" key="${secure.key}" location="classpath:${env}.properties,common.properties" ignoreResourceNotFound="true" systemPropertiesMode="OVERRIDE" doc:name="Secure Property Placeholder"/>
     
     
         <flow name="input" initialState="stopped">
@@ -68,15 +69,17 @@ payload]]></dw:set-payload>
         <batch:process-records>
             <batch:step name="Queueing">
                 <json:object-to-json-transformer doc:name="Object to JSON"/>
-                <anypoint-mq:publish config-ref="AMQConfiguration" destination="account-exchange" doc:name="account-exchange">
-                    <anypoint-mq:message-builder messageId="#[java.util.UUID.randomUUID().toString()]"/>
+                <message-properties-transformer doc:name="Message Properties">
+                    <add-message-property key="correlationId" value="#[java.util.UUID.randomUUID().toString()]"/>
+                </message-properties-transformer>
+                <anypoint-mq:publish config-ref="AMQConfiguration" destination="account-exchange" doc:name="Exchange">
+                    <anypoint-mq:message-builder messageId="#[message.outboundProperties.correlationId]"/>
                 </anypoint-mq:publish>
 
             </batch:step>
             <batch:step name="TargetSystem">
-                <batch:commit size="5" doc:name="Batch Commit">
-                    <logger message="#[payload]" level="INFO" doc:name="Logger"/>
-                </batch:commit>
+                <logger message="#[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+
             </batch:step>
             <batch:step name="Failures" accept-policy="ONLY_FAILURES">
                 <anypoint-mq:publish config-ref="AMQConfiguration" destination="error-queue" doc:name="Error Queue">

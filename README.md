@@ -1,11 +1,11 @@
-# Batch Framework Application 
+# Global Batch Application 
 ---
 Developed for Inchcape PLC.
 
 
 ## Description
 ---
-This Batch API provides a mechanism to push data to Salesforce Cloud from a hierarchy folder SFTP server. 
+This Batch API provides a mechanism to migrate data into Salesforce Cloud from a hierarchy folder SFTP server. 
 
 
 ### Pre-requirements
@@ -40,24 +40,52 @@ In the final set of pre-requirements, those are enclosed to the queue mechanism:
 ---
 Current available endpoints
 
-*Settings*
-`https://globalbatchapi.cloudhub.io/batch/setting`
+#### Settings
+`http://globalbatchapi.cloudhub.io/batch/setting`
 Endpoint to set parameter configurations.
+*HTTP Method*
+`POST`
 
-#### Body
+##### Body
 ---
 ```
-Under construction
+{
+	"object": "account",
+	"country": "Greece", 
+	"business": "distribution",
+	"schedule": {
+		"poll": {
+			"cron" : {
+				"seconds": "0/15",
+				"minutes": "*",
+				"hours": "*",
+				"dayOfMonth": "?",
+				"month": "*",
+				"dayOfWeek": "*",
+				"year": "*"
+			},
+			"timestandard": "UTC"
+		}
+	},
+	"reconnectionStrategyTargetSystem": {
+		"frequencyMilliseconds": 60000,
+		"attempts": 5
+	},
+	"isParent": true,
+	"parent": "parent"
+}
 ```
-#### Response
+##### Response
 ---
 ```
 Under construction
 ```
 
 *Reporting*
-`https://globalbatchapi.cloudhub.io/batch/report`
+`http://globalbatchapi.cloudhub.io/batch/report`
 Endpoint to retrieve latest execution of batch interface.
+*HTTP Method*
+`GET`
 
 #### Body
 ---
@@ -69,10 +97,56 @@ Under construction
 ```
 Under construction
 ```
-
-### Batch Steps
+### Batch Structure
 ---
-*Under construction*
+**Load and Dispatch**
+
+*Poll*
+As a result from configuration parameters using resource **/batch/setting**
+**Example**: 
+```
+	"schedule": {
+		"poll": {
+			"cron" : {
+				"seconds": "0/15",
+				"minutes": "*",
+				"hours": "*",
+				"dayOfMonth": "?",
+				"month": "*",
+				"dayOfWeek": "*",
+				"year": "*"
+			},
+			"timestandard": "UTC"
+		}
+	}
+```
+**Result**:
+`0/15 * * ? * * *`
+means every 15 seconds through minutes, hours, month and years. **Note**: it is required parameter: `timestandard` of execution.
+
+Follow the syntax [Free Formatter Cron Expression](https://www.freeformatter.com/cron-expression-generator-quartz.html) 
+
+*Watermark*
+Pattern to select the file is commanded by: 
+.File CSV 
+.File Age: 60000ms (**1min**)
+
+
+**Batch Steps**
+*Queueing and Target System API*
+1. Route message to the proper exchange in Anypoint MQ according to the name of Batch Interface configured.
+Tag the message ID with an random UUID. 
+2. Route message to the Target System API according to the name of Batch Interface configured.
+3. Retrieve message from the Queue respectively. One of the following action is possible: 
+	HTTP Status response was successfully, then send ACK
+	HTTP Status response is not successful, then send message to Error Queue
+*Failures*
+1. Route messages to Error Queue because message was malformed
+
+
+**On Complete**
+*Report*
+Write on logs the result of execution
 
 ### Connectors and Processors  
 

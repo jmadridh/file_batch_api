@@ -18,22 +18,18 @@ http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/m
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
 http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
 
-
+	<secure-property-placeholder:config name="Batch_Secure_Property_Placeholder" key="${secure.key}" location="classpath:${env}.properties,common.properties" ignoreResourceNotFound="true" systemPropertiesMode="OVERRIDE" doc:name="Secure Property Placeholder"/>
+    
 	<spring:beans>
-		<spring:bean id="pollSynchronizer" name="PollSynchronizer"
-			class="com.inchcape.util.PollSynchronizer" scope="singleton" />
+		<!-- Import Batch Framework resources -->
 		<spring:import resource="classpath:batch_framework_configuration.xml"/>
-		<spring:import resource="classpath:batch_queue_mechanism.xml"/>
-		<!-- <spring:import resource="classpath:batch_target_systems.xml"/> -->
-		<!-- <spring:import resource="classpath:security_framework_configuration.xml"/> -->
-
 		<!-- Import LEH resources -->
 			<spring:import resource="classpath:leh-common-request-preprocess.xml"/> 
 			<spring:import resource="classpath:leh-common-transaction-log-flow.xml"/> 
 			<spring:import resource="classpath:error-handling.xml" />
 	</spring:beans>
 
-	<http:request-config name="http_Request_Configuration" host="0.0.0.0" port="8082" doc:name="HTTP Request Configuration"/>
+	<!-- <http:request-config name="http_Request_Configuration" host="0.0.0.0" port="8082" doc:name="HTTP Request Configuration"/> -->
     <!-- <context:property-placeholder location="${env}.properties" ignore-resource-not-found="true" system-properties-mode="OVERRIDE"/> -->
 
     

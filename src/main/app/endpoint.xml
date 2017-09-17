@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+<mule xmlns:secure-property-placeholder="http://www.mulesoft.org/schema/mule/secure-property-placeholder" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers"
@@ -19,7 +19,8 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
-http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mulesoft.org/schema/mule/secure-property-placeholder/current/mule-secure-property-placeholder.xsd">
     
 	<flow name="reportingFlow">
 		<http:listener config-ref="InchcapeHttpListenerConfiguration"
@@ -64,11 +65,13 @@ payload]]></dw:set-payload>
                 <validation:is-not-empty value="#[payload.object]" message="object is required" exceptionClass="java.lang.IllegalArgumentException"/>
                 <validation:is-not-empty value="#[payload.business]" message="business is required" exceptionClass="java.lang.IllegalArgumentException"/>
                 <validation:is-not-empty value="#[payload.country]" message="country is required" exceptionClass="java.lang.IllegalArgumentException"/>
-            	<validation:is-not-empty value="#[payload.schedule.poll.cron.dayOfMonth]"  message="It is required dayOfMonth" exceptionClass="java.lang.IllegalArgumentException"/>
+                <validation:is-not-empty value="#[payload.parent]" message="parent is required" exceptionClass="java.lang.IllegalArgumentException"/>
+                <validation:is-not-empty value="#[payload.schedule.poll.cron.dayOfMonth]"  message="It is required dayOfMonth" exceptionClass="java.lang.IllegalArgumentException"/>
                 <validation:is-not-empty value="#[payload.schedule.poll.cron.dayOfWeek]"  message="It is required dayOfWeek" exceptionClass="java.lang.IllegalArgumentException"/>
                 <validation:is-false expression="#[payload.schedule.poll.cron.dayOfWeek == '?' &amp;&amp; payload.schedule.poll.cron.dayOfMonth == '?']" message="Do not allowed same value" exceptionClass="java.lang.IllegalArgumentException"/>
                 <validation:is-false expression="#[payload.schedule.poll.cron.dayOfWeek == '*' &amp;&amp; payload.schedule.poll.cron.dayOfMonth == '*']" message="Do not allowed same value" exceptionClass="java.lang.IllegalArgumentException"/>
-            </validation:validations>
+                <validation:is-false expression="#[payload.isParent == false &amp;&amp; (payload.parent.isEmpty() || payload.parent == 'none')]" message="parent is required" exceptionClass="java.lang.IllegalArgumentException"/>
+             </validation:validations>
         </validation:all>
         <dw:transform-message doc:name="MapPropertiesConfiguration">
 			<dw:set-payload ><![CDATA[%dw 1.0
@@ -166,84 +169,59 @@ payload.reconnectionStrategyTargetSystem.frequencyMilliseconds as :string when p
 %output application/java
 ---
 payload.reconnectionStrategyTargetSystem.attempts as :string when payload.reconnectionStrategyTargetSystem.attempts? otherwise p("reconnection.attempts") as :string]]></dw:set-property>
-            <dw:set-property propertyName="connectorName"><![CDATA[%dw 1.0
-%output application/java
----
-"sftp" ++ payload.country ++ payload.business ++ payload.object]]></dw:set-property>
             <dw:set-property propertyName="maxFailedRecords"><![CDATA[%dw 1.0
 %output application/java
 ---
 payload.maxFailedRecords as :string when payload.maxFailedRecords? otherwise p("batch.max.failed.records") as :string]]></dw:set-property>
-        </dw:transform-message>
+            <dw:set-property propertyName="connectorName"><![CDATA[%dw 1.0
+%output application/java
+---
+"sftp" ++ payload.country ++ payload.business ++ payload.object]]></dw:set-property>
+            <dw:set-property propertyName="exchangeName"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.object ++ p("anypointmq.exchange") as :string]]></dw:set-property>
+            <dw:set-property propertyName="queueName"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.object ++ p("anypointmq.queue") as :string]]></dw:set-property>
+            <dw:set-property propertyName="targetSystemAPI"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.parent as :string when payload.isParent == false otherwise payload.object as :string ++ p("target.system.api") as :string]]></dw:set-property>
+            <dw:set-property propertyName="pathTargetSystemAPI"><![CDATA[%dw 1.0
+%output application/java
+---
+payload.object as :string ++ p("path.target.system.api") as :string]]></dw:set-property>
 
+        </dw:transform-message>
+<!-- 
         <component class="com.inchcape.util.DynamicPropertySetter" doc:name="DynamicPropertySetter"/>
-        <component class="com.inchcape.util.DynamicQuartzGenerator" doc:name="DynamicQuartzGenerator"/>
+        <component class="com.inchcape.util.DynamicQuartzGenerator" doc:name="DynamicQuartzGenerator"/> -->
+        <dw:transform-message doc:name="Response Setting">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+{
+	"server": flowVars.serverName,
+	"batchInterface": outboundProperties.country ++ outboundProperties.business ++ outboundProperties.object,
+	"dirs": {
+		"input": outboundProperties.inputPath,
+		"output": outboundProperties.outputPath,
+		"error": outboundProperties.errorPath,
+		"archive": outboundProperties.archivePath
+	},
+	"executionTime": outboundProperties.cronexpression,
+	"timezone": outboundProperties.timestandard,
+	"targetSystemAPI" : outboundProperties.targetSystemAPI, 
+	"time": flowVars.logTimeStamp
+}]]></dw:set-payload>
+        </dw:transform-message>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
 
         <flow-ref name="leh-common-service-log-complete-subflow" doc:name="leh-common-service-log-complete-subflow"/>
 		<exception-strategy ref="global-exception-strategy"
 			doc:name="Reference Exception Strategy" />
 	</flow>
-	
-	<!-- <flow name="vehicle_scheduler">
-        <poll doc:name="Poll">
-            <schedulers:cron-scheduler expression="0 30 1 * * ?" timeZone="Europe/London"/>
-            <watermark variable="lastVehicleCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.lastModifiedDate]"/>
-            <sftp:outbound-endpoint responseTimeout="10000" ref="sftpInboundProperties" doc:name="SFTP Vehicle Files">
-                <file:filename-wildcard-filter pattern="*vehicle*.txt,*vehicle*.csv" caseSensitive="false"/>
-            </sftp:outbound-endpoint>
-        </poll>
-			
-		<dw:transform-message doc:name="ListIterator">
-			<dw:set-payload><![CDATA[%dw 1.0
-%output application/java
-
-payload]]></dw:set-payload>
-		</dw:transform-message>
-		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
-		<flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
-		<choice doc:name="lock policy">
-			<when expression="#['poll' == '${trigger.policy}']">
-				<expression-component doc:name="lock vehicle batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
-				<batch:execute name="vehicle" doc:name="vehicle" />
-			</when>
-			<otherwise>
-				<logger level="INFO" doc:name="Logger" />
-			</otherwise>
-		</choice>
-		<exception-strategy ref="global-exception-strategy"
-			doc:name="Reference Exception Strategy" />
-	</flow> -->
-	<!-- <flow name="vehicleassociation_scheduler">
-        <poll doc:name="Poll">
-            <schedulers:cron-scheduler expression="0 0 2 * * ?" timeZone="Europe/London"/>
-            <watermark variable="lastVehicleAssociationCSV" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.lastModifiedDate]"/>
-            <sftp:outbound-endpoint responseTimeout="10000" ref="sftpInboundProperties" doc:name="SFTP VehicleAssociation Files">
-                <file:filename-wildcard-filter pattern="*vehicleassociation*.txt,*vehicleassociation*.csv" caseSensitive="false"/>
-            </sftp:outbound-endpoint>
-        </poll>
-		
-		<dw:transform-message doc:name="ListIterator">
-			<dw:set-payload><![CDATA[%dw 1.0
-%output application/java
-
-payload]]></dw:set-payload>
-		</dw:transform-message>
-		<flow-ref name="leh-common-request-preprocess-subflow" doc:name="leh-common-request-preprocess-subflow"/> 
-		<flow-ref name="leh-common-trans-log-start-subflow" doc:name="leh-common-trans-log-start-subflow"/>
-		<choice doc:name="lock policy">
-			<when expression="#['poll' == '${trigger.policy}']">
-				<expression-component doc:name="lock vehicleassociation batch interface"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
-				<batch:execute name="vehicleassociation" doc:name="vehicleassociation" />
-			</when>
-			<otherwise>
-				<logger level="INFO" doc:name="Logger" />
-			</otherwise>
-		</choice>
-		<exception-strategy ref="global-exception-strategy"
-			doc:name="Reference Exception Strategy" />
-	</flow> -->
-
-	
 
 </mule>

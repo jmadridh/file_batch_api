@@ -6,7 +6,7 @@
 	<artifactId>batchapi</artifactId>
 	<version>1.0.0</version>
 	<packaging>mule</packaging>
-	<name>file_batch_api</name>
+	<name>global_batch_api</name>
 
 
 	<properties>
@@ -21,8 +21,6 @@
 		<mule.security.placeholder.version>1.6.5</mule.security.placeholder.version>
 		<!-- Batch Framework Version -->
 		<batch.framework.version>1.0.0-SNAPSHOT</batch.framework.version>
-		<!-- Security Framework Version -->
-		<!-- <security.framework.version>1.0.0-SNAPSHOT</security.framework.version> -->
 		<!-- Logging and Exception Framework Version -->
 		<leh.version>1.0.0-SNAPSHOT</leh.version>
 	</properties>
@@ -42,10 +40,6 @@
 							<groupId>com.mulesoft.muleesb.modules</groupId>
 							<artifactId>mule-module-anypoint-mq-ee</artifactId>
 						</inclusion>
-					<!-- <inclusion>
-                            <groupId>com.mulesoft.security</groupId>
-                            <artifactId>mule-module-security-property-placeholder</artifactId>
-                        </inclusion> -->
                     <inclusion>
                             <groupId>com.mulesoft.security</groupId>
                             <artifactId>mule-module-security-property-placeholder</artifactId>
@@ -247,14 +241,6 @@
             <artifactId>batch</artifactId>
             <version>${batch.framework.version}</version>
 		</dependency>
-		<!-- 
-		Security Framework API
-		<dependency>
-			<groupId>com.inchcape.framework</groupId>
-            <artifactId>security</artifactId>
-            <version>${security.framework.version}</version>
-		</dependency>
-		 -->
 		<!-- Logging and Exception Framework -->
         <dependency>
             <groupId>com.ic.leh.common</groupId>
