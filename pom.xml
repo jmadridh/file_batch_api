@@ -238,7 +238,7 @@
 		<!-- Batch Framework API -->
 		<dependency>
 			<groupId>com.inchcape.framework</groupId>
-            <artifactId>batch</artifactId>
+            <artifactId>common-utilities-framework</artifactId>
             <version>${batch.framework.version}</version>
 		</dependency>
 		<!-- Logging and Exception Framework -->
